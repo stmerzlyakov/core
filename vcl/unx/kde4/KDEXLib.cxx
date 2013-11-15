@@ -308,21 +308,16 @@ void KDEXLib::Yield( bool bWait, bool bHandleAllCurrentEvents )
     }
 }
 
-void KDEXLib::processYield( bool bWait, bool bHandleAllCurrentEvents )
+// Qts processEvent always processes all pending events,
+// so we can ignore the second parameter 'bHandleAllCurrentEvents'.
+void KDEXLib::processYield( bool bWait, bool )
 {
     blockIdleTimeout = !bWait;
-    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance( qApp->thread());
-    bool wasEvent = false;
-    for( int cnt = bHandleAllCurrentEvents ? 100 : 1;
-         cnt > 0;
-         --cnt )
-    {
-        if( !dispatcher->processEvents( QEventLoop::AllEvents ))
-            break;
-        wasEvent = true;
-    }
-    if( bWait && !wasEvent )
+    QAbstractEventDispatcher* dispatcher = QAbstractEventDispatcher::instance( qApp->thread() );
+    if ( bWait )
         dispatcher->processEvents( QEventLoop::WaitForMoreEvents );
+    else
+        dispatcher->processEvents( QEventLoop::AllEvents );
     blockIdleTimeout = false;
 }
 
@@ -364,7 +359,9 @@ void KDEXLib::timeoutActivated()
 
     // QGuiEventDispatcherGlib makes glib watch also X11 fd, but its hasPendingEvents()
     // doesn't check X11, so explicitly check XPending() here.
-    bool idle = QApplication::hasPendingEvents() && !blockIdleTimeout && !XPending( QX11Info::display());
+    bool idle = true;
+    if( blockIdleTimeout || XPending( QX11Info::display()) || QApplication::hasPendingEvents() )
+        idle = false;
     X11SalData::Timeout( idle );
     // QTimer is not single shot, so will be restarted immediatelly
 }
