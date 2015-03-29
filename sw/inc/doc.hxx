@@ -47,6 +47,7 @@
 #include <frmfmt.hxx>
 #include <charfmt.hxx>
 #include <docary.hxx>
+#include <pagedesc.hxx>
 
 #include <svtools/embedhlp.hxx>
 
@@ -118,7 +119,6 @@ class SwNodeRange;
 class SwNodes;
 class SwNumRule;
 class SwNumRuleTable;
-class SwPageDesc;
 class SwPagePreviewPrtData;
 class SwRangeRedline;
 class SwRedlineTable;
@@ -236,8 +236,6 @@ namespace sfx2 {
     class IXmlIdRegistry;
     class LinkManager;
 }
-
-typedef boost::ptr_vector<SwPageDesc> SwPageDescs;
 
 void SetAllScriptItem( SfxItemSet& rSet, const SfxPoolItem& rItem );
 
@@ -940,12 +938,12 @@ public:
 
     // PageDescriptor interface.
     size_t GetPageDescCnt() const { return maPageDescs.size(); }
-    const SwPageDesc& GetPageDesc( const size_t i ) const { return maPageDescs[i]; }
-    SwPageDesc& GetPageDesc( size_t i ) { return maPageDescs[i]; }
+    const SwPageDesc& GetPageDesc( const size_t i ) const { return *maPageDescs[i]; }
+    SwPageDesc& GetPageDesc( size_t i ) { return *maPageDescs[i]; }
     SwPageDesc* FindPageDesc(const OUString& rName, size_t* pPos = NULL);
     SwPageDesc* FindPageDesc(const OUString& rName, size_t* pPos = NULL) const;
     // Just searches the pointer in the maPageDescs vector!
-    bool        ContainsPageDesc(const SwPageDesc *pDesc, size_t* pPos = NULL);
+    bool        ContainsPageDesc(const SwPageDesc *pDesc, size_t* pPos = NULL) const;
 
     /** Copy the complete PageDesc - beyond document and "deep"!
      Optionally copying of PoolFormatId, -HlpId can be prevented. */

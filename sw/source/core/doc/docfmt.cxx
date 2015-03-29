@@ -1547,7 +1547,7 @@ void SwDoc::ReplaceStyles( const SwDoc& rSource, bool bIncludePageStyles )
             // 1st step: Create all formats (skip the 0th - it's the default!)
             while( nCnt )
             {
-                const SwPageDesc &rSrc = rSource.maPageDescs[ --nCnt ];
+                const SwPageDesc &rSrc = *rSource.maPageDescs[ --nCnt ];
                 if( 0 == FindPageDesc( rSrc.GetName() ) )
                     MakePageDesc( rSrc.GetName() );
             }
@@ -1555,7 +1555,7 @@ void SwDoc::ReplaceStyles( const SwDoc& rSource, bool bIncludePageStyles )
             // 2nd step: Copy all attributes, set the right parents
             for( nCnt = rSource.maPageDescs.size(); nCnt; )
             {
-                const SwPageDesc &rSrc = rSource.maPageDescs[ --nCnt ];
+                const SwPageDesc &rSrc = *rSource.maPageDescs[ --nCnt ];
                 SwPageDesc* pDesc = FindPageDesc( rSrc.GetName() );
                 CopyPageDesc( rSrc, *pDesc);
             }
