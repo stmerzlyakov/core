@@ -137,7 +137,7 @@ sal_uLong SwReader::Read( const Reader& rOptions )
     RedlineMode_t ePostReadRedlineMode( nsRedlineMode_t::REDLINE_IGNORE );
 
     // Array of FlyFormats
-    SwFrameFormats aFlyFrmArr;
+    SwFrameFormatsV aFlyFrmArr;
     // only read templates? then ignore multi selection!
     bool bFormatsOnly = po->aOpt.IsFormatsOnly();
 
