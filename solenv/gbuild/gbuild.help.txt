@@ -35,8 +35,10 @@ AVAILABLE TARGETS
        perfcheck        run performance/callgrind unit tests
        check            run unit tests and if in toplevel subsequentcheck
        clean            remove all generated files
-       debugrun         starts the INSTDIR instance and allows tests to be run
-                        against it
+       debugrun         starts the INSTDIR instance and allows tests to
+                        be run against it. You can provide additional
+                        arguments to soffice.bin using the gb_DBGARGS
+                        variable.
        dump-deps-png    creates dependency diagrams in PNG format
                         NOTE: needs graphviz to work
        showmodules      shows all registered modules
@@ -127,3 +129,5 @@ INTERACTIVE VARIABLES:
        gb_Side         Either "host" or "build" (default to "host").
                        determine if config_host.mk or config_build.mk is used to
                        set the build environment.
+       gb_DBGARGS      Append these arguments to GDBs "set args" command for
+                       debugrun. Double quotes will be automatically escaped.
