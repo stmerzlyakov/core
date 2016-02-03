@@ -31,10 +31,17 @@ endif
 
 ifeq ($(OS),MACOSX)
 $(eval $(call gb_UnpackedTarball_add_patches,firebird,\
-	external/firebird/firebird-configure-x86-64-macosx.patch.1 \
 	external/firebird/firebird-macosx.patch.1 \
-	external/firebird/macosx-elcapitan-dyld.patch \
+	external/firebird/firebird-macosx-print-dyldlibpath.patch \
+))
+ifeq ($(CPUNAME),POWERPC)
+$(eval $(call gb_UnpackedTarball_add_patches,firebird,\
+	external/firebird/firebird-macosx-powerpc-fixes.patch \
+))
+else
+$(eval $(call gb_UnpackedTarball_add_patches,firebird,\
+	external/firebird/firebird-configure-x86-64-macosx.patch.1 \
 ))
 endif
-
+endif
 # vim: set noet sw=4 ts=4:
