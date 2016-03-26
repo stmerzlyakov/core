@@ -69,10 +69,9 @@ bool GfxLink::IsEqual( const GfxLink& rGfxLink ) const
     return bIsEqual;
 }
 
-
 bool GfxLink::IsNative() const
 {
-    return( meType >= GFX_LINK_FIRST_NATIVE_ID && meType <= GFX_LINK_LAST_NATIVE_ID );
+    return( myType >= GFX_LINK_FIRST_NATIVE_ID && myType <= GFX_LINK_LAST_NATIVE_ID );
 }
 
 
@@ -114,16 +113,16 @@ bool GfxLink::LoadNative( Graphic& rGraphic )
 
             aMemStm.SetBuffer( const_cast<sal_uInt8*>(pData), mnSwapInDataSize, mnSwapInDataSize );
 
-            switch( meType )
+            switch( myType )
             {
                 case GfxLinkType::NativeGif: nCvtType = ConvertDataFormat::GIF; break;
                 case GfxLinkType::NativeBmp: nCvtType = ConvertDataFormat::BMP; break;
-                case GfxLinkType::NativeJpg: nCvtType = ConvertDataFormat::JPG; break;
+                case GfxLinkType::NativeJpeg: nCvtType = ConvertDataFormat::JPEG; break;
                 case GfxLinkType::NativePng: nCvtType = ConvertDataFormat::PNG; break;
-                case GfxLinkType::NativeTif: nCvtType = ConvertDataFormat::TIF; break;
+                case GfxLinkType::NativeTiff: nCvtType = ConvertDataFormat::TIFF; break;
                 case GfxLinkType::NativeWmf: nCvtType = ConvertDataFormat::WMF; break;
                 case GfxLinkType::NativeMet: nCvtType = ConvertDataFormat::MET; break;
-                case GfxLinkType::NativePct: nCvtType = ConvertDataFormat::PCT; break;
+                case GfxLinkType::NativePict: nCvtType = ConvertDataFormat::PICT; break;
                 case GfxLinkType::NativeSvg: nCvtType = ConvertDataFormat::SVG; break;
 
                 default: nCvtType = ConvertDataFormat::Unknown; break;
@@ -224,7 +223,10 @@ SvStream& ReadGfxLink( SvStream& rIStream, GfxLink& rGfxLink)
     std::unique_ptr<VersionCompat>  pCompat(new VersionCompat( rIStream, StreamMode::READ ));
 
     // Version 1
-    rIStream.ReadUInt16( nType ).ReadUInt32( nSize ).ReadUInt32( nUserId );
+    sal_uInt16 theType;
+    sal_uInt32 nSize;
+    sal_uInt32 nUserId;
+    rIStream.ReadUInt16( theType ).ReadUInt32( nSize ).ReadUInt32( nUserId );
 
     if( pCompat->GetVersion() >= 2 )
     {
