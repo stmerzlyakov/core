@@ -103,7 +103,12 @@ SlideSorterModel::SlideSorterModel (SlideSorter& rSlideSorter)
     : maMutex(),
       mrSlideSorter(rSlideSorter),
       mxSlides(),
+<<<<<<< 91468257a4db4d69d1f752b48d5b3d437e9fd11e
       meEditMode(EM_PAGE),
+=======
+      mePageKind( PageKind::Standard ),
+      meEditMode( EditMode::Page ),
+>>>>>>> sd: convert DocumentType PageKind EditMode NavigatorDragType to enum class
       maPageDescriptors(0)
 {
 }
@@ -439,7 +444,7 @@ void SlideSorterModel::UpdatePageList()
     {
         switch (meEditMode)
         {
-            case EM_MASTERPAGE:
+            case EditMode::MasterPage:
             {
                 Reference<drawing::XMasterPagesSupplier> xSupplier (
                     xController->getModel(), UNO_QUERY);
@@ -450,7 +455,7 @@ void SlideSorterModel::UpdatePageList()
             }
             break;
 
-            case EM_PAGE:
+            case EditMode::Page:
             {
                 Reference<drawing::XDrawPagesSupplier> xSupplier (
                     xController->getModel(), UNO_QUERY);
@@ -527,9 +532,9 @@ bool SlideSorterModel::NotifyPageEvent (const SdrPage* pSdrPage)
 
     // We are only interested in pages that are currently served by this
     // model.
-    if (pPage->GetPageKind() != PK_STANDARD)
+    if ( pPage->GetPageKind() != PageKind::Standard )
         return false;
-    if (pPage->IsMasterPage() != (meEditMode==EM_MASTERPAGE))
+    if ( pPage->IsMasterPage() != ( meEditMode == EditMode::MasterPage ) )
         return false;
 
     //NotifyPageEvent is called for add, remove, *and* change position so for
@@ -633,12 +638,12 @@ void SlideSorterModel::UpdateIndices (const sal_Int32 nFirstIndex)
 SdPage* SlideSorterModel::GetPage (const sal_Int32 nSdIndex) const
 {
     SdDrawDocument* pModel = const_cast<SlideSorterModel*>(this)->GetDocument();
-    if (pModel != nullptr)
+    if ( pModel )
     {
-        if (meEditMode == EM_PAGE)
-            return pModel->GetSdPage ((sal_uInt16)nSdIndex, PK_STANDARD);
+        if ( meEditMode == EditMode::Page )
+            return pModel->GetSdPage( (sal_uInt16)nSdIndex, PageKind::Standard );
         else
-            return pModel->GetMasterSdPage ((sal_uInt16)nSdIndex, PK_STANDARD);
+            return pModel->GetMasterSdPage( (sal_uInt16)nSdIndex, PageKind::Standard );
     }
     else
         return nullptr;
