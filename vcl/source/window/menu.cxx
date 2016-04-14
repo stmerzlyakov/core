@@ -129,7 +129,7 @@ Menu::Menu()
       nTextPos(0),
       bCanceled(false),
       bInCallback(false),
-      bKilled(false),
+      bOff(false),
       mpLayoutData(nullptr),
       mpSalMenu(nullptr)
 {
@@ -173,7 +173,7 @@ void Menu::dispose()
         pDelData = pDelData->mpNext;
     }
 
-    bKilled = true;
+    bOff = true;
 
     delete pItemList;
     delete pLogo;
@@ -2274,7 +2274,7 @@ void Menu::MenuBarKeyInput(const KeyEvent&)
 {
 }
 
-void Menu::ImplKillLayoutData() const
+void Menu::ImplBinLayoutData() const
 {
     delete mpLayoutData;
     mpLayoutData = nullptr;
@@ -2533,7 +2533,7 @@ void MenuBar::ImplDestroy( MenuBar* pMenu, bool bDelete )
     {
         MenuBarWindow* pMenuWin = pMenu->getMenuBarWindow();
         if (pMenuWin)
-            pMenuWin->KillActivePopup();
+            pMenuWin->FreeActivePopup();
         pWindow->disposeOnce();
     }
     pMenu->pWindow = nullptr;
@@ -2611,7 +2611,7 @@ void MenuBar::SelectItem(sal_uInt16 nId)
             pMenuWin->SetAutoPopup( true );
             if (ITEMPOS_INVALID != pMenuWin->GetHighlightedItem())
             {
-                pMenuWin->KillActivePopup();
+                pMenuWin->FreeActivePopup();
                 pMenuWin->ChangeHighlightItem( ITEMPOS_INVALID, false );
             }
             if (nId != ITEMPOS_INVALID)
@@ -2795,7 +2795,7 @@ void PopupMenu::ClosePopup(Menu* pMenu)
     MenuFloatingWindow* p = dynamic_cast<MenuFloatingWindow*>(ImplGetWindow());
     PopupMenu *pPopup = dynamic_cast<PopupMenu*>(pMenu);
     if (p && pMenu)
-        p->KillActivePopup(pPopup);
+        p->FreeActivePopup(pPopup);
 }
 
 bool PopupMenu::IsInExecute()
@@ -2838,7 +2838,7 @@ void PopupMenu::SelectItem(sal_uInt16 nId)
                 MenuItemData* pData = GetItemList()->GetDataFromPos( nPos );
                 if( pData->pSubMenu )
                 {
-                    pFloat->KillActivePopup();
+                    pFloat->FreeActivePopup();
                 }
             }
             pFloat->ChangeHighlightItem( ITEMPOS_INVALID, false );
@@ -2943,7 +2943,7 @@ sal_uInt16 PopupMenu::ImplExecute( const VclPtr<vcl::Window>& pW, const Rectangl
     if ( pW->IsDisposed() )
         return 0;   // Error
 
-    if ( bCanceled || bKilled )
+    if ( bCanceled || bOff )
         return 0;
 
     if ( !GetItemCount() )

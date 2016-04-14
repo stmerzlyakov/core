@@ -160,7 +160,7 @@ private:
 
     bool bCanceled : 1; ///< Terminated during a callback
     bool bInCallback : 1; ///< In Activate/Deactivate
-    bool bKilled : 1; ///< Killed
+    bool bOff : 1; ///< Off
 
     css::uno::Reference<css::accessibility::XAccessible > mxAccessible;
     mutable vcl::MenuLayoutData* mpLayoutData;
@@ -213,7 +213,7 @@ protected:
     virtual void MenuBarKeyInput(const KeyEvent& rEvent);
 
 public:
-    SAL_DLLPRIVATE void ImplKillLayoutData() const;
+    SAL_DLLPRIVATE void ImplBinLayoutData() const;
 
     SAL_DLLPRIVATE vcl::Window* ImplGetWindow() const { return pWindow; }
 #if defined(MACOSX)
