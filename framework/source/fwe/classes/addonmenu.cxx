@@ -56,10 +56,10 @@ AddonMenu::~AddonMenu()
     disposeOnce();
 }
 
-// Check if command URL string has the unique prefix to identify addon popup menus
-bool AddonPopupMenu::IsCommandURLPrefix( const OUString& aCmdURL )
+// Check if action URL string has the unique prefix to identify addon popup menus
+bool AddonPopupMenu::IsActionURLPrefix( const OUString& aURL )
 {
-    return aCmdURL.startsWith( ADDONSPOPUPMENU_URL_PREFIX_STR );
+    return aURL.startsWith( ADDONSPOPUPMENU_URL_PREFIX_STR );
 }
 
 AddonPopupMenu::AddonPopupMenu( const css::uno::Reference< css::frame::XFrame >& rFrame ) :
@@ -212,7 +212,7 @@ void AddonMenuManager::MergeAddonPopupMenus( const Reference< XFrame >& rFrame,
 
         OUString                              aTitle;
         OUString                              aURL;
-        OUString                              aTarget;
+        OUString                              aRecipient;
         OUString                              aImageId;
         OUString                              aContext;
         Sequence< Sequence< PropertyValue > > aAddonSubMenu;
@@ -225,7 +225,7 @@ void AddonMenuManager::MergeAddonPopupMenus( const Reference< XFrame >& rFrame,
             AddonMenuManager::GetMenuEntry( rAddonMenuEntries[i],
                                             aTitle,
                                             aURL,
-                                            aTarget,
+                                            aRecipient,
                                             aImageId,
                                             aContext,
                                             aAddonSubMenu );
@@ -241,7 +241,7 @@ void AddonMenuManager::MergeAddonPopupMenus( const Reference< XFrame >& rFrame,
 
                 if ( pAddonPopupMenu->GetItemCount() > 0 )
                 {
-                    pAddonPopupMenu->SetCommandURL( aURL );
+                    pAddonPopupMenu->SetActionURL( aURL );
                     pMergeMenuBar->InsertItem( nId, aTitle, MenuItemBits::NONE, OString(), nInsertPos++ );
                     pMergeMenuBar->SetPopupMenu( nId, pAddonPopupMenu );
 
@@ -273,13 +273,13 @@ void AddonMenuManager::BuildMenu( PopupMenu*                            pCurrent
 
     OUString aTitle;
     OUString aURL;
-    OUString aTarget;
+    OUString aRecipient;
     OUString aImageId;
     OUString aContext;
 
     for ( i = 0; i < nCount; ++i )
     {
-        GetMenuEntry( aAddonMenuDefinition[i], aTitle, aURL, aTarget, aImageId, aContext, aAddonSubMenu );
+        GetMenuEntry( aAddonMenuDefinition[i], aTitle, aURL, aRecipient, aImageId, aContext, aAddonSubMenu );
 
         if ( !IsCorrectContext( rModuleIdentifier, aContext ) || ( aTitle.isEmpty() && aURL.isEmpty() ))
             continue;
@@ -319,8 +319,8 @@ void AddonMenuManager::BuildMenu( PopupMenu*                            pCurrent
             ++nElements;
 
             // Store values from configuration to the New and Wizard menu entries to enable
-            // sfx2 based code to support high contrast mode correctly!
-            sal_uIntPtr nAttributePtr = MenuAttributes::CreateAttribute(aTarget, aImageId);
+            // sfx2 based code to support high contrast mode
+            sal_uIntPtr nAttributePtr = MenuAttributes::CreateAttribute( aRecipient, aImageId );
             pCurrentMenu->SetUserValue(nId, nAttributePtr, MenuAttributes::ReleaseAttribute);
             pCurrentMenu->SetItemCommand( nId, aURL );
 
@@ -334,7 +334,7 @@ void AddonMenuManager::BuildMenu( PopupMenu*                            pCurrent
 void AddonMenuManager::GetMenuEntry( const Sequence< PropertyValue >& rAddonMenuEntry,
                                      OUString& rTitle,
                                      OUString& rURL,
-                                     OUString& rTarget,
+                                     OUString& rRecipient,
                                      OUString& rImageId,
                                      OUString& rContext,
                                      Sequence< Sequence< PropertyValue > >& rAddonSubMenu )
@@ -349,8 +349,14 @@ void AddonMenuManager::GetMenuEntry( const Sequence< PropertyValue >& rAddonMenu
             rAddonMenuEntry[i].Value >>= rURL;
         else if ( aMenuEntryPropName == ADDONSMENUITEM_STRING_TITLE )
             rAddonMenuEntry[i].Value >>= rTitle;
-        else if ( aMenuEntryPropName == ADDONSMENUITEM_STRING_TARGET )
-            rAddonMenuEntry[i].Value >>= rTarget;
+        else if ( aMenuEntryPropName == ADDONSMENUITEM_STRING_RECIPIENT )
+            rAddonMenuEntry[i].Value >>= rRecipient;
+        else if ( aMenuEntryPropName == "Target" )
+        {
+            SAL_WARN( "framework", "\"Target\" into \"Recipient\" in AddonMenuManager" );
+            rAddonMenuEntry[i].Value >>= rRecipient;
+            ///rAddonMenuEntry[i].Name = OUString::createFromAscii( ADDONSMENUITEM_STRING_RECIPIENT );
+        }
         else if ( aMenuEntryPropName == ADDONSMENUITEM_STRING_IMAGEIDENTIFIER )
             rAddonMenuEntry[i].Value >>= rImageId;
         else if ( aMenuEntryPropName == ADDONSMENUITEM_STRING_SUBMENU )
