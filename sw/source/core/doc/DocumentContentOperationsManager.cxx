@@ -119,6 +119,23 @@ namespace
         return false;
     }
 
+    SwNodeIndex InitDelCount(SwPaM const& rSourcePaM, sal_uLong & rDelCount)
+    {
+        SwNodeIndex const& rStart(rSourcePaM.Start()->nNode);
+        // Special handling for SwDoc::AppendDoc
+        if (rSourcePaM.GetDoc()->GetNodes().GetEndOfExtras().GetIndex() + 1
+                == rStart.GetIndex())
+        {
+            rDelCount = 1;
+            return SwNodeIndex(rStart, +1);
+        }
+        else
+        {
+            rDelCount = 0;
+            return SwNodeIndex(rStart);
+        }
+    }
+
     /*
         The lcl_CopyBookmarks function has to copy bookmarks from the source to the destination nodes
         array. It is called after a call of the _CopyNodes(..) function. But this function does not copy
@@ -138,18 +155,14 @@ namespace
         if( rLastIdx.GetIndex() < nNewIdx ) // Moving forward?
         {
             // We never copy the StartOfContent node
-            // Special handling for SwDoc::AppendDoc
-            if( rPam.GetDoc()->GetNodes().GetEndOfExtras().GetIndex() + 1 == nStart )
-            {
-                ++rDelCount;
-                ++rLastIdx;
-            }
             do // count "non-copy" nodes
             {
                 SwNode& rNode = rLastIdx.GetNode();
                 if( ( rNode.IsSectionNode() && rNode.EndOfSectionIndex() >= nEnd )
                     || ( rNode.IsEndNode() && rNode.StartOfSectionNode()->GetIndex() < nStart ) )
+                {
                     ++rDelCount;
+                }
                 ++rLastIdx;
             }
             while( rLastIdx.GetIndex() < nNewIdx );
@@ -162,7 +175,9 @@ namespace
                 SwNode& rNode = rLastIdx.GetNode();
                 if( ( rNode.IsSectionNode() && rNode.EndOfSectionIndex() >= nEnd )
                     || ( rNode.IsEndNode() && rNode.StartOfSectionNode()->GetIndex() < nStart ) )
+                {
                     --rDelCount;
+                }
                 rLastIdx--;
             }
         }
@@ -230,8 +245,8 @@ namespace
             }
         }
         // We have to count the "non-copied" nodes..
-        SwNodeIndex aCorrIdx(rStt.nNode);
-        sal_uLong nDelCount = 0;
+        sal_uLong nDelCount;
+        SwNodeIndex aCorrIdx(InitDelCount(rPam, nDelCount));
         for(mark_vector_t::const_iterator ppMark = vMarksToCopy.begin();
             ppMark != vMarksToCopy.end();
             ++ppMark)
@@ -304,8 +319,8 @@ namespace
             SwPaM* pDelPam = 0;
             const SwPosition *pStt = rPam.Start(), *pEnd = rPam.End();
             // We have to count the "non-copied" nodes
-            sal_uLong nDelCount = 0;
-            SwNodeIndex aCorrIdx( pStt->nNode );
+            sal_uLong nDelCount;
+            SwNodeIndex aCorrIdx(InitDelCount(rPam, nDelCount));
 
             sal_uInt16 n = 0;
             pSrcDoc->getIDocumentRedlineAccess().GetRedline( *pStt, &n );
