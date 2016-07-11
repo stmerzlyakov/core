@@ -660,7 +660,7 @@ const SfxPoolItem& SfxItemPool::Put( const SfxPoolItem& rItem, sal_uInt16 nWhich
     {
         SFX_ASSERT( USHRT_MAX != nIndex || rItem.Which() != nWhich ||
                     !IsDefaultItem(&rItem) || rItem.GetKind() == SFX_ITEMS_DELETEONIDLE,
-                    nWhich, "a non Pool Item is Defaul?!" );
+                    nWhich, "a non Pool Item is Default?!" );
         SfxPoolItem *pPoolItem = rItem.Clone(pImp->mpMaster);
         pPoolItem->SetWhich(nWhich);
         AddRef( *pPoolItem );

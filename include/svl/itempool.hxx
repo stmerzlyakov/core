@@ -32,11 +32,14 @@ struct SfxItemPool_Impl;
 
 #define SFX_WHICH_MAX 4999
 
+/**
+ * Can the item be shared between multiple pools?
+ */
 enum class SfxItemPoolFlags
 {
-    NONE               = 0x00,
-    POOLABLE           = 0x01,
-    NOT_POOLABLE       = 0x02,
+    NONE               = 0x00, //<< Independant item, not sharable
+    POOLABLE           = 0x01, //<< Single item, value shareable / ref-counted between multiple pools
+    NOT_POOLABLE       = 0x02, //<< Can't be added to a pool, will return cloned default
 };
 namespace o3tl
 {

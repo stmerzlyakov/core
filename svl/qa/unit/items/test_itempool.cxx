@@ -76,8 +76,15 @@ void PoolItemTest::testPool()
         CPPUNIT_ASSERT(pImpl->maPoolItems[1] != NULL);
 
         const SfxPoolItem &rVal2 = pPool->Put(aNotherOne);
+        CPPUNIT_ASSERT(rVal2 == aNotherOne);
         CPPUNIT_ASSERT(rVal2 == rVal);
         CPPUNIT_ASSERT(&rVal2 != &rVal);
+
+        // Clones on Put ...
+        CPPUNIT_ASSERT(&rVal2 != &aItemOne);
+        CPPUNIT_ASSERT(&rVal2 != &aNotherOne);
+        CPPUNIT_ASSERT(&rVal != &aItemOne);
+        CPPUNIT_ASSERT(&rVal != &aNotherOne);
     }
 
     // not-poolable
@@ -88,7 +95,11 @@ void PoolItemTest::testPool()
         const SfxPoolItem &rVal = pPool->Put(aItemTwo);
         // those guys just don't go in ...
         CPPUNIT_ASSERT(pImpl->maPoolItems[2] == NULL);
-        CPPUNIT_ASSERT(rVal == aItemOne);
+        CPPUNIT_ASSERT(rVal == aItemTwo);
+
+        // Clones on Put ...
+        CPPUNIT_ASSERT(&rVal != &aItemTwo);
+        CPPUNIT_ASSERT(&rVal != &aNotherTwo);
     }
 
     // Test rehash
