@@ -1376,7 +1376,7 @@ void StatusBar::SetProgressValue( sal_uInt16 nNewPercent )
     &&   IsReallyVisible()
     &&   (!mnPercent || (mnPercent != nNewPercent)) )
     {
-        Invalidate(maPrgsFrameRect);
+        Invalidate(maPrgsFrameRect, INVALIDATE_NOERASE);
         Flush();
     }
     mnPercent = nNewPercent;
