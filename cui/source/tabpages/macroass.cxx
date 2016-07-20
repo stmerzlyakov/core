@@ -139,6 +139,10 @@ _SfxMacroTabPage::_SfxMacroTabPage(vcl::Window* pParent, const SfxItemSet& rAttr
     : SfxTabPage(pParent, "EventAssignPage", "cui/ui/eventassignpage.ui", &rAttrSet)
 {
     mpImpl = new _SfxMacroTabPage_Impl;
+
+    mpImpl->maFillGroupIdle.SetIdleHdl( LINK( this, _SfxMacroTabPage, TimeOut_Impl ) );
+    mpImpl->maFillGroupIdle.SetPriority( SchedulerPriority::HIGHEST );
+    mpImpl->maFillGroupIdle.SetDebugName( "_SfxMacroTabPage maFillGroupIdle" );
 }
 
 _SfxMacroTabPage::~_SfxMacroTabPage()
@@ -195,12 +199,8 @@ bool _SfxMacroTabPage::FillItemSet( SfxItemSet* rSet )
 
 void _SfxMacroTabPage::LaunchFillGroup()
 {
-    if (!mpImpl->maFillGroupIdle.GetIdleHdl().IsSet())
-    {
-        mpImpl->maFillGroupIdle.SetIdleHdl( LINK( this, _SfxMacroTabPage, TimeOut_Impl ) );
-        mpImpl->maFillGroupIdle.SetPriority( SchedulerPriority::HIGHEST );
+    if (! mpImpl->maFillGroupIdle.IsActive() )
         mpImpl->maFillGroupIdle.Start();
-    }
 }
 
 void _SfxMacroTabPage::ActivatePage( const SfxItemSet& )

@@ -409,11 +409,18 @@ ScChartListenerCollection::RangeListenerItem::RangeListenerItem(const ScRange& r
 {
 }
 
+void ScChartListenerCollection::Init()
+{
+    aIdle.SetIdleHdl( LINK( this, ScChartListenerCollection, TimerHdl ) );
+    aIdle.SetPriority( SchedulerPriority::REPAINT );
+    aIdle.SetDebugName( "sc::ScChartListenerCollection aIdle" );
+}
+
 ScChartListenerCollection::ScChartListenerCollection( ScDocument* pDocP ) :
     meModifiedDuringUpdate( SC_CLCUPDATE_NONE ),
     pDoc( pDocP )
 {
-    aIdle.SetIdleHdl( LINK( this, ScChartListenerCollection, TimerHdl ) );
+    Init();
 }
 
 ScChartListenerCollection::ScChartListenerCollection(
@@ -421,7 +428,7 @@ ScChartListenerCollection::ScChartListenerCollection(
     meModifiedDuringUpdate( SC_CLCUPDATE_NONE ),
     pDoc( rColl.pDoc )
 {
-    aIdle.SetIdleHdl( LINK( this, ScChartListenerCollection, TimerHdl ) );
+    Init();
 }
 
 ScChartListenerCollection::~ScChartListenerCollection()
@@ -589,7 +596,6 @@ void ScChartListenerCollection::FreeUno( const uno::Reference< chart::XChartData
 
 void ScChartListenerCollection::StartTimer()
 {
-    aIdle.SetPriority( SchedulerPriority::REPAINT );
     aIdle.Start();
 }
 

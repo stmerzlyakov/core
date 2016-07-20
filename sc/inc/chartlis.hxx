@@ -156,6 +156,9 @@ private:
 
     ScChartListenerCollection& operator=( const ScChartListenerCollection& ) SAL_DELETED_FUNCTION;
 
+protected:
+    void Init();
+
 public:
     ScChartListenerCollection( ScDocument* pDoc );
     ScChartListenerCollection( const ScChartListenerCollection& );

@@ -271,6 +271,8 @@ private:
                            DockingWindow & operator= (const DockingWindow &) SAL_DELETED_FUNCTION;
 
 protected:
+    SAL_DLLPRIVATE void    SetIdleDebugName( const sal_Char *pDebugName );
+
     using Window::ImplInit;
     SAL_DLLPRIVATE void    ImplInit( vcl::Window* pParent, WinBits nStyle );
     SAL_DLLPRIVATE void    ImplInitSettings();
@@ -431,6 +433,11 @@ inline void DockingWindow::SetFloatingPos( const Point& rNewPos )
         mpFloatWin->SetPosPixel( rNewPos );
     else
         maFloatPos = rNewPos;
+}
+
+inline void DockingWindow::SetIdleDebugName( const sal_Char *pDebugName )
+{
+    maLayoutIdle.SetDebugName( pDebugName );
 }
 
 

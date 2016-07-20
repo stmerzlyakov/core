@@ -1405,10 +1405,12 @@ void ToolBox::ImplInit( vcl::Window* pParent, WinBits nStyle )
 
     maIdle.SetPriority( SchedulerPriority::RESIZE );
     maIdle.SetIdleHdl( LINK( this, ToolBox, ImplUpdateHdl ) );
+    maIdle.SetDebugName( "vcl::ToolBox maIdle" );
 
     // set timeout and handler for dropdown items
     mpData->maDropdownTimer.SetTimeout( 250 );
     mpData->maDropdownTimer.SetTimeoutHdl( LINK( this, ToolBox, ImplDropdownLongClickHdl ) );
+    mpData->maDropdownTimer.SetDebugName( "vcl::ToolBox mpData->maDropdownTimer" );
 
     DockingWindow::ImplInit( pParent, nStyle & ~(WB_BORDER) );
 

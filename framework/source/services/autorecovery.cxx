@@ -1273,6 +1273,7 @@ AutoRecovery::AutoRecovery(const css::uno::Reference< css::uno::XComponentContex
     , m_dbg_bMakeItFaster       (sal_False                                          )
     #endif
 {
+    m_aTimer.SetDebugName( "framework::AutoRecovery m_aTimer" );
 }
 
 void AutoRecovery::initListeners()

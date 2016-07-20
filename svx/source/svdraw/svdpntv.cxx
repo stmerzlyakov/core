@@ -193,6 +193,7 @@ void SdrPaintView::ImpClearVars()
     nGraphicManagerDrawMode = GraphicManagerDrawFlags::STANDARD;
     aComeBackIdle.SetPriority(SchedulerPriority::REPAINT);
     aComeBackIdle.SetIdleHdl(LINK(this,SdrPaintView,ImpComeBackHdl));
+    aComeBackIdle.SetDebugName( "svx::SdrPaintView aComeBackIdle" );
 
     if (pMod)
         SetDefaultStyleSheet(pMod->GetDefaultStyleSheet(), true);

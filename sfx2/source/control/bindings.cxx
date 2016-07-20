@@ -176,6 +176,7 @@ public:
     {
         aTimer.SetTimeoutHdl( LINK(this, SfxAsyncExec_Impl, TimerHdl) );
         aTimer.SetTimeout( 0 );
+        aTimer.SetDebugName( "sfx::SfxAsyncExec_Impl aTimer" );
         aTimer.Start();
     }
 
@@ -257,6 +258,7 @@ SfxBindings::SfxBindings()
     // create the list of caches
     pImp->pCaches = new SfxStateCacheArr_Impl;
     pImp->aTimer.SetTimeoutHdl( LINK(this, SfxBindings, NextJob) );
+    pImp->aTimer.SetDebugName( "sfx::SfxBindings_Impl aTimer" );
 }
 
 

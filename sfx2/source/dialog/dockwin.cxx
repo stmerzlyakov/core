@@ -860,8 +860,10 @@ SfxDockingWindow::SfxDockingWindow( SfxBindings *pBindinx, SfxChildWindow *pCW,
     pImp->bNewLine = false;
     pImp->SetDockAlignment(SfxChildAlignment::NOALIGNMENT);
     pImp->SetLastAlignment(SfxChildAlignment::NOALIGNMENT);
+
     pImp->aMoveIdle.SetPriority(SchedulerPriority::RESIZE);
     pImp->aMoveIdle.SetIdleHdl(LINK(this,SfxDockingWindow,TimerHdl));
+    pImp->aMoveIdle.SetDebugName( "sfx::SfxDockingWindow_Impl aMoveIdle" );
 }
 
 /** Constructor for the SfxDockingWindow class. A SfxChildWindow will be

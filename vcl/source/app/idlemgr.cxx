@@ -37,6 +37,7 @@ ImplIdleMgr::ImplIdleMgr():
 
     maTimer.SetTimeout( IMPL_IDLETIMEOUT );
     maTimer.SetTimeoutHdl( LINK( this, ImplIdleMgr, TimeoutHdl ) );
+    maTimer.SetDebugName( "vcl::ImplIdleMgr maTimer" );
 }
 
 ImplIdleMgr::~ImplIdleMgr()

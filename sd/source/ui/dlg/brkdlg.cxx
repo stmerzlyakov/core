@@ -48,6 +48,10 @@ BreakDlg::BreakDlg(
     , aLink( LINK(this, BreakDlg, UpDate))
     , mpProgress( NULL )
 {
+    m_aUpdateIdle.SetPriority( SchedulerPriority::REPAINT );
+    m_aUpdateIdle.SetIdleHdl( LINK( this, BreakDlg, InitialUpdate ) );
+    m_aUpdateIdle.SetDebugName( "sd::BreakDlg m_aUpdateIdle" );
+
     get(m_pFiObjInfo, "metafiles");
     get(m_pFiActInfo, "metaobjects");
     get(m_pFiInsInfo, "drawingobjects");
@@ -156,9 +160,7 @@ IMPL_LINK( BreakDlg, UpDate, void*, nInit )
  */
 short BreakDlg::Execute()
 {
-  aIdle.SetPriority( SchedulerPriority::REPAINT );
-  aIdle.SetIdleHdl( LINK( this, BreakDlg, InitialUpdate ) );
-  aIdle.Start();
+  m_aUpdateIdle.Start();
 
   return SfxModalDialog::Execute();
 }
