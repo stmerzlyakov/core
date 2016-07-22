@@ -188,14 +188,13 @@ void CollectFrameAtNode( SwClient& rClnt, const SwNodeIndex& rIdx,
         const SwSortedObjs *pObjs = pCFrm->GetDrawObjs();
         if( pObjs )
         {
-            std::set<const SwFrameFormat*> aTextBoxes = SwTextBoxHelper::findTextBoxes(pDoc);
             for( size_t i = 0; i < pObjs->size(); ++i )
             {
                 SwAnchoredObject* pAnchoredObj = (*pObjs)[i];
                 SwFrameFormat& rFormat = pAnchoredObj->GetFrameFormat();
 
                 // Filter out textboxes, which are not interesting at an UNO level.
-                if (aTextBoxes.find(&rFormat) != aTextBoxes.end())
+                if (SwTextBoxHelper::isTextBox(&rFormat, RES_FLYFRMFMT))
                     continue;
 
                 if ( rFormat.GetAnchor().GetAnchorId() == nChkType )

@@ -1093,13 +1093,11 @@ SwXFrameEnumeration<T>::SwXFrameEnumeration(const SwDoc* const pDoc)
     // #i104937#
     SwFrameFormat* pFormat( 0 );
 
-    std::set<const SwFrameFormat*> aTextBoxes = SwTextBoxHelper::findTextBoxes(pDoc);
-
     for( size_t i = 0; i < nSize; ++i )
     {
         // #i104937#
         pFormat = (*pFormats)[i];
-        if(pFormat->Which() != RES_FLYFRMFMT || aTextBoxes.find(pFormat) != aTextBoxes.end())
+        if(pFormat->Which() != RES_FLYFRMFMT || SwTextBoxHelper::isTextBox(pFormat, RES_FLYFRMFMT))
             continue;
         const SwNodeIndex* pIdx =  pFormat->GetContent().GetContentIdx();
         if(!pIdx || !pIdx->GetNodes().IsDocNodes())

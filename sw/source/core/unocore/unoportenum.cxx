@@ -727,8 +727,7 @@ lcl_ExportHints(
     const sal_Int32 nCurrentIndex,
     const bool bRightMoveForbidden,
     bool & o_rbCursorMoved,
-    sal_Int32 & o_rNextAttrPosition,
-    std::set<const SwFrameFormat*>& rTextBoxes)
+    sal_Int32 & o_rNextAttrPosition)
 {
     // if the attribute has a dummy character, then xRef is set (except META)
     // otherwise, the portion for the attribute is inserted into rPortions!
@@ -901,7 +900,7 @@ lcl_ExportHints(
                             break; // Robust #i81708 content in covered cells
 
                         // Do not expose inline anchored textboxes.
-                        if (rTextBoxes.find(pAttr->GetFlyCnt().GetFrameFormat()) != rTextBoxes.end())
+                        if (SwTextBoxHelper::isTextBox(pAttr->GetFlyCnt().GetFrameFormat(), RES_FLYFRMFMT))
                             break;
 
                         pUnoCrsr->Exchange();
@@ -1287,8 +1286,6 @@ static void lcl_CreatePortions(
     PortionStack_t PortionStack;
     PortionStack.push( PortionList_t(&i_rPortions, (const SwTextAttr *)0) );
 
-    std::set<const SwFrameFormat*> aTextBoxes = SwTextBoxHelper::findTextBoxes(pUnoCrsr->GetNode());
-
     bool bAtEnd( false );
     while (!bAtEnd) // every iteration consumes at least current character!
     {
@@ -1339,7 +1336,7 @@ static void lcl_CreatePortions(
             // N.B.: side-effects nNextAttrIndex, bCursorMoved; may move cursor
             xRef = lcl_ExportHints(PortionStack, i_xParentText, pUnoCrsr,
                         pHints, i_nStartPos, i_nEndPos, nCurrentIndex, bAtEnd,
-                        bCursorMoved, nNextAttrIndex, aTextBoxes);
+                        bCursorMoved, nNextAttrIndex);
             if (PortionStack.empty())
             {
                 OSL_FAIL("CreatePortions: stack underflow");

@@ -574,9 +574,8 @@ void SwUiWriterTest::testFdo82191()
 {
     SwDoc* pDoc = createDoc("fdo82191.odt");
     SdrPage* pPage = pDoc->getIDocumentDrawModelAccess().GetDrawModel()->GetPage(0);
-    std::set<const SwFrameFormat*> aTextBoxes = SwTextBoxHelper::findTextBoxes(pDoc);
     // Make sure we have a single draw shape.
-    CPPUNIT_ASSERT_EQUAL(sal_Int32(1), SwTextBoxHelper::getCount(pPage, aTextBoxes));
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(1), SwTextBoxHelper::getCount(pPage));
 
     SwDoc aClipboard;
     SwWrtShell* pWrtShell = pDoc->GetDocShell()->GetWrtShell();
@@ -586,9 +585,8 @@ void SwUiWriterTest::testFdo82191()
     pWrtShell->Copy(&aClipboard);
     pWrtShell->Paste(&aClipboard);
 
-    aTextBoxes = SwTextBoxHelper::findTextBoxes(pDoc);
     // This was one: the textbox of the shape wasn't copied.
-    CPPUNIT_ASSERT_EQUAL(size_t(2), aTextBoxes.size());
+    CPPUNIT_ASSERT_EQUAL(sal_Int32(2), SwTextBoxHelper::getCount(pDoc));
 }
 
 void SwUiWriterTest::testCommentedWord()

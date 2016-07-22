@@ -497,7 +497,7 @@ void SwDrawShell::GetState(SfxItemSet& rSet)
                 {
                     SwFrameFormat* pFrameFormat = ::FindFrameFormat(pObj);
                     // Allow creating a TextBox only in case this is a draw format without a TextBox so far.
-                    if (pFrameFormat && pFrameFormat->Which() == RES_DRAWFRMFMT && !SwTextBoxHelper::findTextBox(pFrameFormat))
+                    if (pFrameFormat && pFrameFormat->Which() == RES_DRAWFRMFMT && !SwTextBoxHelper::isTextBox(pFrameFormat, RES_DRAWFRMFMT))
                     {
                         if (SdrObjCustomShape* pCustomShape = PTR_CAST(SdrObjCustomShape, pObj))
                         {
@@ -520,7 +520,7 @@ void SwDrawShell::GetState(SfxItemSet& rSet)
                 {
                     SwFrameFormat* pFrameFormat = ::FindFrameFormat(pObj);
                     // Allow removing a TextBox only in case it has one.
-                    if (pFrameFormat && SwTextBoxHelper::findTextBox(pFrameFormat))
+                    if (pFrameFormat && SwTextBoxHelper::isTextBox(pFrameFormat, RES_DRAWFRMFMT))
                         bDisable = false;
                 }
 
