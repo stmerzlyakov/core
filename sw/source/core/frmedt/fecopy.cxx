@@ -144,13 +144,16 @@ bool SwFEShell::Copy( SwDoc* pClpDoc, const OUString* pNewClpText )
         }
         pFlyFormat = pClpDoc->getIDocumentLayoutAccess().CopyLayoutFormat( *pFlyFormat, aAnchor, true, true );
 
-       // assure the "RootFormat" is the first element in Spz-Array
+        // assure the "RootFormat" is the first element in Spz-Array
         // (if necessary Flys were copied in Flys)
         SwFrameFormats& rSpzFrameFormats = *pClpDoc->GetSpzFrameFormats();
         if( rSpzFrameFormats[ 0 ] != pFlyFormat )
         {
-            bool inserted = rSpzFrameFormats.newDefault( pFlyFormat );
-            OSL_ENSURE( !inserted, "Fly not contained in Spz-Array" );
+#ifndef NDEBUG
+            bool inserted =
+#endif
+                rSpzFrameFormats.newDefault( pFlyFormat );
+            assert( !inserted && "Fly not contained in Spz-Array" );
         }
 
         if ( FLY_AS_CHAR == aAnchor.GetAnchorId() )
