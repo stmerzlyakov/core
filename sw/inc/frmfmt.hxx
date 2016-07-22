@@ -43,6 +43,7 @@ class SW_DLLPUBLIC SwFrameFormat: public SwFormat
     friend class SwPageDesc;    ///< Is allowed to call protected CTor.
     friend class ::sw::DocumentLayoutManager; ///< Is allowed to call protected CTor.
     friend class SwFrameFormats;     ///< Is allowed to update the list backref.
+    friend class SwTextBoxHelper;
 
     ::com::sun::star::uno::WeakReference<
         ::com::sun::star::uno::XInterface> m_wXObject;
@@ -52,6 +53,8 @@ class SW_DLLPUBLIC SwFrameFormat: public SwFormat
 
     // The assigned SwFrmFmt list.
     SwFrameFormats *m_ffList;
+
+    SwFrameFormat *m_pOtherTextBoxFormat;
 
     struct change_name
     {
@@ -76,6 +79,9 @@ protected:
         const sal_uInt16* pWhichRange = 0);
 
     virtual void Modify( const SfxPoolItem* pOld, const SfxPoolItem* pNewValue ) SAL_OVERRIDE;
+
+    SwFrameFormat* GetOtherTextBoxFormat() const { return m_pOtherTextBoxFormat; }
+    void SetOtherTextBoxFormat( SwFrameFormat *pFormat );
 
 public:
     TYPEINFO_OVERRIDE();     ///< Already in base class Client.
