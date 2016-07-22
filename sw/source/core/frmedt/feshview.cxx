@@ -229,15 +229,13 @@ bool SwFEShell::SelectObj( const Point& rPt, sal_uInt8 nFlag, SdrObject *pObj )
     }
 
     // If the fly frame is a textbox of a shape, then select the shape instead.
-    std::map<SwFrameFormat*, SwFrameFormat*> aTextBoxShapes = SwTextBoxHelper::findShapes(mpDoc);
     for (size_t i = 0; i < rMrkList.GetMarkCount(); ++i)
     {
         SdrObject* pObject = rMrkList.GetMark(i)->GetMarkedSdrObj();
-        SwContact* pDrawContact = static_cast<SwContact*>(GetUserCall(pObject));
-        SwFrameFormat* pFormat = pDrawContact->GetFormat();
-        if (aTextBoxShapes.find(pFormat) != aTextBoxShapes.end())
+        SwFrameFormat* pFormat = static_cast<SwDrawContact*>(GetUserCall(pObject))->GetFormat();
+        if (SwFrameFormat* pShapeFormat = SwTextBoxHelper::getOtherTextBoxFormat(pFormat, RES_FLYFRMFMT))
         {
-            SdrObject* pShape = aTextBoxShapes[pFormat]->FindSdrObject();
+            SdrObject* pShape = pShapeFormat->FindSdrObject();
             pDView->UnmarkAll();
             pDView->MarkObj(pShape, Imp()->GetPageView(), bAddSelect, bEnterGroup);
             break;

@@ -1297,11 +1297,10 @@ void SwFlyFrm::Format( vcl::RenderContext* /*pRenderContext*/, const SwBorderAtt
             }
             mbValidSize = true;
 
-            std::map<SwFrameFormat*, SwFrameFormat*> aShapes = SwTextBoxHelper::findShapes(GetFormat()->GetDoc());
-            if (aShapes.find(GetFormat()) != aShapes.end())
+            if (SwFrameFormat* pShapeFormat = SwTextBoxHelper::getOtherTextBoxFormat(GetFormat(), RES_FLYFRMFMT))
             {
                 // This fly is a textbox of a draw shape.
-                SdrObject* pShape = aShapes[GetFormat()]->FindSdrObject();
+                SdrObject* pShape = pShapeFormat->FindSdrObject();
                 if (SdrObjCustomShape* pCustomShape = PTR_CAST(SdrObjCustomShape, pShape))
                 {
                     // The shape is a customshape: then inform it about the calculated fly size.

@@ -39,8 +39,7 @@ RtfSdrExport::RtfSdrExport(RtfExport& rExport)
       m_nShapeType(ESCHER_ShpInst_Nil),
       m_nShapeFlags(0) ,
       m_aShapeStyle(200),
-      m_pShapeTypeWritten(new bool[ ESCHER_ShpInst_COUNT ]),
-      m_aTextBoxes(SwTextBoxHelper::findTextBoxes(m_rExport.m_pDoc))
+      m_pShapeTypeWritten(new bool[ ESCHER_ShpInst_COUNT ])
 {
     mnGroupLevel = 1;
     memset(m_pShapeTypeWritten, 0, ESCHER_ShpInst_COUNT * sizeof(bool));
@@ -512,7 +511,7 @@ sal_Int32 RtfSdrExport::StartShape()
     const SwFrameFormat* pShape = FindFrameFormat(m_pSdrObject);
     if (pShape)
     {
-        if (SwFrameFormat* pTextBox = SwTextBoxHelper::findTextBox(pShape))
+        if (SwFrameFormat* pTextBox = SwTextBoxHelper::getOtherTextBoxFormat(pShape, RES_DRAWFRMFMT))
         {
             sw::Frame* pFrame = 0;
             for (sw::FrameIter it = m_rExport.m_aFrames.begin(); it != m_rExport.m_aFrames.end(); ++it)

@@ -4251,10 +4251,9 @@ void SwEditWin::MouseButtonUp(const MouseEvent& rMEvt)
             SdrPageView* pPV;
             if (pSdrView && pSdrView->PickObj(aDocPos, pSdrView->getHitTolLog(), pObj, pPV, SdrSearchOptions::ALSOONMASTER ))
             {
-                std::map<SwFrameFormat*, SwFrameFormat*> aTextBoxShapes = SwTextBoxHelper::findShapes(rSh.GetDoc());
-                SwDrawContact* pDrawContact = static_cast<SwDrawContact*>(GetUserCall(pObj));
-                SwFrameFormat* pFormat = pDrawContact->GetFormat();
-                if (aTextBoxShapes.find(pFormat) == aTextBoxShapes.end())
+                SwFrameFormat* pFormat = static_cast<SwDrawContact*>(GetUserCall(pObj))->GetFormat();
+                SwFrameFormat* pShapeFormat = SwTextBoxHelper::getOtherTextBoxFormat(pFormat, RES_FLYFRMFMT);
+                if (!pShapeFormat)
                 {
                     pSdrView->UnmarkAllObj();
                     pSdrView->MarkObj(pObj,pPV,false,false);
@@ -4262,7 +4261,7 @@ void SwEditWin::MouseButtonUp(const MouseEvent& rMEvt)
                 else
                 {
                     // If the fly frame is a textbox of a shape, then select the shape instead.
-                    SdrObject* pShape = aTextBoxShapes[pFormat]->FindSdrObject();
+                    SdrObject* pShape = pShapeFormat->FindSdrObject();
                     pSdrView->UnmarkAllObj();
                     pSdrView->MarkObj(pShape, pPV, false, false);
                 }
