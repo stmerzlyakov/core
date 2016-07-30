@@ -42,14 +42,14 @@ void ImplSchedulerData::Invoke()
     mbInScheduler = false;
 }
 
-ImplSchedulerData *ImplSchedulerData::GetMostImportantTask( bool bTimer )
+ImplSchedulerData *ImplSchedulerData::GetMostImportantTask( const sal_uInt64 nTime, const bool bTimer )
 {
     ImplSVData*     pSVData = ImplGetSVData();
     ImplSchedulerData *pMostUrgent = NULL;
 
     for ( ImplSchedulerData *pSchedulerData = pSVData->mpFirstSchedulerData; pSchedulerData; pSchedulerData = pSchedulerData->mpNext )
     {
-        if ( !pSchedulerData->mpScheduler || !pSchedulerData->mpScheduler->ReadyForSchedule( bTimer ) )
+        if ( !pSchedulerData->mpScheduler || !pSchedulerData->mpScheduler->ReadyForSchedule( nTime, bTimer ) )
             continue;
         if (!pMostUrgent)
             pMostUrgent = pSchedulerData;
@@ -115,13 +115,6 @@ void Scheduler::ProcessTaskScheduling( bool bTimer )
     sal_uInt64         nTime = tools::Time::GetSystemTicks();
     sal_uInt64         nMinPeriod = MAX_TIMER_PERIOD;
 
-    // tdf#91727 - NB. bTimer is ultimately not used
-    if ((pSchedulerData = ImplSchedulerData::GetMostImportantTask(bTimer)))
-    {
-        pSchedulerData->mnUpdateTime = nTime;
-        pSchedulerData->Invoke();
-    }
-
     pSchedulerData = pSVData->mpFirstSchedulerData;
     while ( pSchedulerData )
     {
@@ -145,10 +138,17 @@ void Scheduler::ProcessTaskScheduling( bool bTimer )
         }
         else
         {
-            nMinPeriod = pSchedulerData->mpScheduler->UpdateMinPeriod( nMinPeriod, nTime );
+            pSchedulerData->mpScheduler->UpdateMinPeriod( nTime, nMinPeriod );
             pPrevSchedulerData = pSchedulerData;
             pSchedulerData = pSchedulerData->mpNext;
         }
+    }
+
+    // tdf#91727 - NB. bTimer is ultimately not used
+    if ((pSchedulerData = ImplSchedulerData::GetMostImportantTask(nTime, bTimer)))
+    {
+        pSchedulerData->mnLastTime = nTime;
+        pSchedulerData->Invoke();
     }
 
     // delete clock if no more timers available
@@ -193,7 +193,7 @@ void Scheduler::Start()
         else
             pSVData->mpFirstSchedulerData = mpSchedulerData;
     }
-    mpSchedulerData->mnUpdateTime  = tools::Time::GetSystemTicks();
+    mpSchedulerData->mnLastTime  = tools::Time::GetSystemTicks();
 }
 
 void Scheduler::Stop()

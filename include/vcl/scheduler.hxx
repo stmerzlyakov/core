@@ -29,11 +29,11 @@ struct ImplSchedulerData
     ImplSchedulerData*  mpNext;      // Pointer to the next element in list
     Scheduler*          mpScheduler;      // Pointer to VCL Scheduler instance
     bool                mbInScheduler;    // Scheduler currently processed?
-    sal_uInt64          mnUpdateTime;   // Last Update Time
+    sal_uInt64          mnLastTime;   // Last Update Time
 
     void Invoke();
 
-    static ImplSchedulerData *GetMostImportantTask( bool bTimer );
+    static ImplSchedulerData *GetMostImportantTask( const sal_uInt64 nTime, const bool bTimer );
 };
 
 enum class SchedulerPriority {
@@ -56,8 +56,8 @@ protected:
 
     friend struct ImplSchedulerData;
     virtual void SetDeletionFlags();
-    virtual bool ReadyForSchedule( bool bTimer ) = 0;
-    virtual sal_uInt64 UpdateMinPeriod( sal_uInt64 nMinPeriod, sal_uInt64 nTime ) = 0;
+    virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bTimer ) = 0;
+    virtual void UpdateMinPeriod( const sal_uInt64 nTime, sal_uInt64 &nMinPeriod ) = 0;
 
 public:
     Scheduler( const sal_Char *pDebugName = NULL );
