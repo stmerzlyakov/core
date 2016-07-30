@@ -23,14 +23,12 @@
 #include <svdata.hxx>
 #include <salinst.hxx>
 
-#define MAX_TIMER_PERIOD   SAL_MAX_UINT64
-
 void Timer::ImplStartTimer( ImplSVData* pSVData, sal_uInt64 nMS )
 {
     InitSystemTimer();
 
-    if ( !nMS )
-        nMS = 1;
+    if ( nMS < MIN_SLEEP_PERIOD )
+        nMS = MIN_SLEEP_PERIOD;
 
     // Assume underlying timers are recurring timers, if same period - just wait.
     if ( nMS != pSVData->mnTimerPeriod )
@@ -56,7 +54,7 @@ void Timer::UpdateMinPeriod( const sal_uInt64 nTime, sal_uInt64 &nMinPeriod )
 {
     sal_uInt64 nWakeupTime = mpSchedulerData->mnLastTime + mnTimeout;
     if( nWakeupTime <= nTime )
-        nMinPeriod = 1;
+        nMinPeriod = MIN_SLEEP_PERIOD;
     else
     {
         sal_uInt64 nSleepTime = nWakeupTime - nTime;
@@ -74,7 +72,7 @@ void Timer::InitSystemTimer()
     ImplSVData* pSVData = ImplGetSVData();
     if( ! pSVData->mpSalTimer )
     {
-        pSVData->mnTimerPeriod = MAX_TIMER_PERIOD;
+        pSVData->mnTimerPeriod = MAX_SLEEP_PERIOD;
         pSVData->mpSalTimer = pSVData->mpDefInst->CreateSalTimer();
         pSVData->mpSalTimer->SetCallback( CallbackTaskScheduling );
     }

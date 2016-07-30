@@ -22,6 +22,9 @@
 
 #include <vcl/dllapi.h>
 
+#define MIN_SLEEP_PERIOD   1
+#define MAX_SLEEP_PERIOD   SAL_MAX_UINT64
+
 struct ImplSVData;
 class Scheduler;
 struct ImplSchedulerData
@@ -32,8 +35,6 @@ struct ImplSchedulerData
     sal_uInt64          mnLastTime;   // Last Update Time
 
     void Invoke();
-
-    static ImplSchedulerData *GetMostImportantTask( const sal_uInt64 nTime, const bool bTimer );
 };
 
 enum class SchedulerPriority {
@@ -49,6 +50,10 @@ enum class SchedulerPriority {
 
 class VCL_DLLPUBLIC Scheduler
 {
+private:
+    static inline void UpdateMinPeriod( ImplSchedulerData *pSchedulerData,
+                                        const sal_uInt64 nTime, sal_uInt64 &nMinPeriod );
+
 protected:
     ImplSchedulerData*  mpSchedulerData;    /// Pointer to element in scheduler list
     const sal_Char     *mpDebugName;        /// Useful for debugging

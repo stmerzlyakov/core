@@ -23,8 +23,6 @@
 #include <vcl/timer.hxx>
 #include <saltimer.hxx>
 
-#define MAX_TIMER_PERIOD    SAL_MAX_UINT64
-
 void ImplSchedulerData::Invoke()
 {
     assert( mpScheduler && !mbInScheduler );
@@ -40,30 +38,6 @@ void ImplSchedulerData::Invoke()
     mbInScheduler = true;
     sched->Invoke();
     mbInScheduler = false;
-}
-
-ImplSchedulerData *ImplSchedulerData::GetMostImportantTask( const sal_uInt64 nTime, const bool bIdle )
-{
-    ImplSVData*     pSVData = ImplGetSVData();
-    ImplSchedulerData *pMostUrgent = NULL;
-
-    for ( ImplSchedulerData *pSchedulerData = pSVData->mpFirstSchedulerData; pSchedulerData; pSchedulerData = pSchedulerData->mpNext )
-    {
-        if ( !pSchedulerData->mpScheduler || !pSchedulerData->mpScheduler->ReadyForSchedule( nTime, bIdle ) )
-            continue;
-        if (!pMostUrgent)
-            pMostUrgent = pSchedulerData;
-        else
-        {
-            // Find the highest priority.
-            // If the priority of the current task is higher (numerical value is lower) than
-            // the priority of the most urgent, the current task gets the new most urgent.
-            if ( pSchedulerData->mpScheduler->GetPriority() < pMostUrgent->mpScheduler->GetPriority() )
-                pMostUrgent = pSchedulerData;
-        }
-    }
-
-    return pMostUrgent;
 }
 
 void Scheduler::SetDeletionFlags()
@@ -104,63 +78,103 @@ void Scheduler::CallbackTaskScheduling( bool bIdle )
     Scheduler::ProcessTaskScheduling( bIdle );
 }
 
+inline void Scheduler::UpdateMinPeriod( ImplSchedulerData *pSchedulerData,
+                                        const sal_uInt64 nTime, sal_uInt64 &nMinPeriod )
+{
+    if ( nMinPeriod > MIN_SLEEP_PERIOD )
+        pSchedulerData->mpScheduler->UpdateMinPeriod( nTime, nMinPeriod );
+    assert( nMinPeriod >= MIN_SLEEP_PERIOD );
+}
+
 void Scheduler::ProcessTaskScheduling( bool bIdle )
 {
     // process all pending Tasks
     // if bIdle is false, only handle timer
-    ImplSchedulerData* pSchedulerData = NULL;
-    ImplSchedulerData* pPrevSchedulerData = NULL;
     ImplSVData*        pSVData = ImplGetSVData();
+    ImplSchedulerData* pSchedulerData = pSVData->mpFirstSchedulerData;
+    ImplSchedulerData* pPrevSchedulerData = NULL;
+    ImplSchedulerData *pPrevMostUrgent = NULL;
+    ImplSchedulerData *pMostUrgent = NULL;
     sal_uInt64         nTime = tools::Time::GetSystemTicks();
-    sal_uInt64         nMinPeriod = MAX_TIMER_PERIOD;
+    sal_uInt64         nMinPeriod = MAX_SLEEP_PERIOD;
 
-    pSchedulerData = pSVData->mpFirstSchedulerData;
     while ( pSchedulerData )
     {
-        if( pSchedulerData->mbInScheduler )
-        {
-            pPrevSchedulerData = pSchedulerData;
-            pSchedulerData = pSchedulerData->mpNext;
-        }
+        if ( pSchedulerData->mbInScheduler )
+            goto next_entry;
+
         // Should Task be released from scheduling?
-        else if ( !pSchedulerData->mpScheduler )
+        if ( !pSchedulerData->mpScheduler )
         {
+            ImplSchedulerData* pNextSchedulerData = pSchedulerData->mpNext;
             if ( pPrevSchedulerData )
-                pPrevSchedulerData->mpNext = pSchedulerData->mpNext;
+                pPrevSchedulerData->mpNext = pNextSchedulerData;
             else
-                pSVData->mpFirstSchedulerData = pSchedulerData->mpNext;
-            if ( pSchedulerData->mpScheduler )
-                pSchedulerData->mpScheduler->mpSchedulerData = NULL;
+                pSVData->mpFirstSchedulerData = pNextSchedulerData;
             ImplSchedulerData* pTempSchedulerData = pSchedulerData;
             pSchedulerData = pSchedulerData->mpNext;
             delete pTempSchedulerData;
+            continue;
         }
-        else
+
+        assert( pSchedulerData->mpScheduler );
+        if ( !pSchedulerData->mpScheduler->ReadyForSchedule( nTime, bIdle ) )
+            goto evaluate_entry;
+
+        // if the priority of the current task is higher (numerical value is lower) than
+        // the priority of the most urgent, the current task becomes the new most urgent
+        if ( !pMostUrgent )
         {
-            pSchedulerData->mpScheduler->UpdateMinPeriod( nTime, nMinPeriod );
-            pPrevSchedulerData = pSchedulerData;
-            pSchedulerData = pSchedulerData->mpNext;
+            pPrevMostUrgent = pPrevSchedulerData;
+            pMostUrgent = pSchedulerData;
         }
+        else if ( pSchedulerData->mpScheduler->GetPriority() < pMostUrgent->mpScheduler->GetPriority() )
+        {
+            UpdateMinPeriod( pMostUrgent, nTime, nMinPeriod );
+            pPrevMostUrgent = pPrevSchedulerData;
+            pMostUrgent = pSchedulerData;
+            goto next_entry;
+        }
+
+evaluate_entry:
+        UpdateMinPeriod( pSchedulerData, nTime, nMinPeriod );
+
+next_entry:
+        pPrevSchedulerData = pSchedulerData;
+        pSchedulerData = pSchedulerData->mpNext;
     }
 
-    // tdf#91727 - NB. bTimer is ultimately not used
-    if ((pSchedulerData = ImplSchedulerData::GetMostImportantTask(nTime, bIdle)))
+    assert( !pSchedulerData );
+
+    if ( pMostUrgent )
     {
-        pSchedulerData->mnLastTime = nTime;
-        pSchedulerData->Invoke();
+        assert( pPrevMostUrgent != pMostUrgent );
+
+        pMostUrgent->mnLastTime = nTime;
+        UpdateMinPeriod( pMostUrgent, nTime, nMinPeriod );
+
+        pMostUrgent->Invoke();
+
+        // do some simple round-robin scheduling
+        // nothing to do, if we're already the last element
+        if ( pMostUrgent->mpScheduler && pMostUrgent != pPrevSchedulerData )
+        {
+            if ( pPrevMostUrgent )
+                pPrevMostUrgent->mpNext = pMostUrgent->mpNext;
+            else
+                pSVData->mpFirstSchedulerData = pMostUrgent->mpNext;
+            pPrevSchedulerData->mpNext = pMostUrgent;
+            pMostUrgent->mpNext = NULL;
+        }
     }
 
     // delete clock if no more timers available
-    if ( !pSVData->mpFirstSchedulerData )
-    {
-        if ( pSVData->mpSalTimer )
-            pSVData->mpSalTimer->Stop();
-        pSVData->mnTimerPeriod = MAX_TIMER_PERIOD;
-    }
-    else
-    {
+    if ( nMinPeriod != MAX_SLEEP_PERIOD )
         Timer::ImplStartTimer( pSVData, nMinPeriod );
-    }
+    else if ( pSVData->mpSalTimer )
+        pSVData->mpSalTimer->Stop();
+
+    pSVData->mnTimerPeriod = nMinPeriod;
 }
 
 void Scheduler::SetPriority( SchedulerPriority ePriority )

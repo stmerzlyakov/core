@@ -63,7 +63,7 @@ void Idle::UpdateMinPeriod( const sal_uInt64 /* nTime */, sal_uInt64 &nMinPeriod
     case SchedulerPriority::HIGH:
     case SchedulerPriority::RESIZE:
     case SchedulerPriority::REPAINT:
-        nMinPeriod = 1; // don't wait.
+        nMinPeriod = MIN_SLEEP_PERIOD; // don't wait.
         break;
     default:
         // FIXME: tdf#92036 workaround, I should be 1 too - wait 5ms
