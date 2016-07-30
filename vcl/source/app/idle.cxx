@@ -49,7 +49,7 @@ void Idle::Start()
     Timer::ImplStartTimer( pSVData, 0 );
 }
 
-bool Idle::ReadyForSchedule( const sal_uInt64 /* nTime */, const bool /* bTimer */ )
+bool Idle::ReadyForSchedule( const sal_uInt64 /* nTime */, const bool /* bIdle */ )
 {
     // tdf#91727 - We need to re-work this to allow only UI idle handlers
     //             and not timeouts to be processed in some limited scenarios

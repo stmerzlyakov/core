@@ -28,7 +28,7 @@ class VCL_DLLPUBLIC Idle : public Scheduler
 protected:
     Link<Idle *, void> maIdleHdl;          // Callback Link
 
-    virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bTimer ) SAL_OVERRIDE;
+    virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bIdle ) SAL_OVERRIDE;
     virtual void UpdateMinPeriod( const sal_uInt64 nTime, sal_uInt64 &nMinPeriod ) SAL_OVERRIDE;
 
 public:

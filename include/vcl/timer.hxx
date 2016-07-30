@@ -31,7 +31,7 @@ protected:
     bool            mbAuto;
 
     virtual void SetDeletionFlags() SAL_OVERRIDE;
-    virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bTimer ) SAL_OVERRIDE;
+    virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bIdle ) SAL_OVERRIDE;
     virtual void UpdateMinPeriod( const sal_uInt64 nTime, sal_uInt64 &nMinPeriod ) SAL_OVERRIDE;
 
 private:

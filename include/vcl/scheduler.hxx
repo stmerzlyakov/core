@@ -56,7 +56,7 @@ protected:
 
     friend struct ImplSchedulerData;
     virtual void SetDeletionFlags();
-    virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bTimer ) = 0;
+    virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bIdle ) = 0;
     virtual void UpdateMinPeriod( const sal_uInt64 nTime, sal_uInt64 &nMinPeriod ) = 0;
 
 public:
@@ -84,7 +84,7 @@ public:
     // Process one pending Timer with highhest priority
     static void CallbackTaskScheduling( bool ignore );
     /// Process one pending task ahead of time with highhest priority.
-    static void ProcessTaskScheduling( bool bTimer );
+    static void ProcessTaskScheduling( bool bIdle );
 };
 
 inline bool Scheduler::IsActive() const

@@ -42,14 +42,14 @@ void ImplSchedulerData::Invoke()
     mbInScheduler = false;
 }
 
-ImplSchedulerData *ImplSchedulerData::GetMostImportantTask( const sal_uInt64 nTime, const bool bTimer )
+ImplSchedulerData *ImplSchedulerData::GetMostImportantTask( const sal_uInt64 nTime, const bool bIdle )
 {
     ImplSVData*     pSVData = ImplGetSVData();
     ImplSchedulerData *pMostUrgent = NULL;
 
     for ( ImplSchedulerData *pSchedulerData = pSVData->mpFirstSchedulerData; pSchedulerData; pSchedulerData = pSchedulerData->mpNext )
     {
-        if ( !pSchedulerData->mpScheduler || !pSchedulerData->mpScheduler->ReadyForSchedule( nTime, bTimer ) )
+        if ( !pSchedulerData->mpScheduler || !pSchedulerData->mpScheduler->ReadyForSchedule( nTime, bIdle ) )
             continue;
         if (!pMostUrgent)
             pMostUrgent = pSchedulerData;
@@ -98,17 +98,16 @@ void Scheduler::ImplDeInitScheduler()
     pSVData->mpSalTimer = 0;
 }
 
-void Scheduler::CallbackTaskScheduling(bool ignore)
+void Scheduler::CallbackTaskScheduling( bool bIdle )
 {
     // this function is for the saltimer callback
-    (void)ignore;
-    Scheduler::ProcessTaskScheduling( true );
+    Scheduler::ProcessTaskScheduling( bIdle );
 }
 
-void Scheduler::ProcessTaskScheduling( bool bTimer )
+void Scheduler::ProcessTaskScheduling( bool bIdle )
 {
     // process all pending Tasks
-    // if bTimer True, only handle timer
+    // if bIdle is false, only handle timer
     ImplSchedulerData* pSchedulerData = NULL;
     ImplSchedulerData* pPrevSchedulerData = NULL;
     ImplSVData*        pSVData = ImplGetSVData();
@@ -145,7 +144,7 @@ void Scheduler::ProcessTaskScheduling( bool bTimer )
     }
 
     // tdf#91727 - NB. bTimer is ultimately not used
-    if ((pSchedulerData = ImplSchedulerData::GetMostImportantTask(nTime, bTimer)))
+    if ((pSchedulerData = ImplSchedulerData::GetMostImportantTask(nTime, bIdle)))
     {
         pSchedulerData->mnLastTime = nTime;
         pSchedulerData->Invoke();

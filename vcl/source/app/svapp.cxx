@@ -343,7 +343,7 @@ inline void ImplYield( bool i_bWait, bool i_bAllEvents )
     ImplSVData* pSVData = ImplGetSVData();
 
     //Process all Tasks
-    Scheduler::ProcessTaskScheduling(false);
+    Scheduler::ProcessTaskScheduling( true );
 
     pSVData->maAppData.mnDispatchLevel++;
     // do not wait for events if application was already quit; in that
@@ -364,7 +364,7 @@ inline void ImplYield( bool i_bWait, bool i_bAllEvents )
     if( pSVData->maAppData.mbNoYield )
     {
         //Process all timers
-        Scheduler::ProcessTaskScheduling(true);
+        Scheduler::ProcessTaskScheduling( false );
     }
 
     // call post yield listeners
