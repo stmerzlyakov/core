@@ -316,6 +316,7 @@ struct ImplSVData
     sal_uLong               mnThreadCount;                  // is VCL MultiThread enabled
     ImplConfigData*         mpFirstConfigData;              // pointer to the first config block
     ImplSchedulerData*      mpFirstSchedulerData;           // list of all running tasks
+    ImplSchedulerData*      mpFreeSchedulerData;            // list of all deleted tasks for reuse
     SalTimer*               mpSalTimer;                     // interface to sal event loop/timers
     SalI18NImeStatus*       mpImeStatus;                    // interface to ime status window
     SalSystem*              mpSalSystem;                    // SalSystem interface
