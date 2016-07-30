@@ -28,7 +28,6 @@ struct ImplSchedulerData
 {
     ImplSchedulerData*  mpNext;      // Pointer to the next element in list
     Scheduler*          mpScheduler;      // Pointer to VCL Scheduler instance
-    bool                mbDelete;    // Destroy this scheduler?
     bool                mbInScheduler;    // Scheduler currently processed?
     sal_uInt64          mnUpdateTime;   // Last Update Time
     sal_uInt32          mnUpdateStack;  // Update Stack
@@ -55,7 +54,6 @@ protected:
     ImplSchedulerData*  mpSchedulerData;    /// Pointer to element in scheduler list
     const sal_Char     *mpDebugName;        /// Useful for debugging
     SchedulerPriority   mePriority;         /// Scheduler priority
-    bool                mbActive;           /// Currently in the scheduler
 
     friend struct ImplSchedulerData;
     virtual void SetDeletionFlags();
@@ -79,8 +77,7 @@ public:
     virtual void    Start();
     virtual void    Stop();
 
-    bool            IsActive() const { return mbActive; }
-    void            SetInActive() { mbActive = false; }
+    inline bool     IsActive() const;
 
     Scheduler&          operator=( const Scheduler& rScheduler );
     static void ImplDeInitScheduler();
@@ -90,6 +87,11 @@ public:
     /// Process one pending task ahead of time with highhest priority.
     static void ProcessTaskScheduling( bool bTimer );
 };
+
+inline bool Scheduler::IsActive() const
+{
+    return NULL != mpSchedulerData;
+}
 
 #endif // INCLUDED_VCL_SCHEDULER_HXX
 

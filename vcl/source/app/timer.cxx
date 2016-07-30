@@ -42,17 +42,13 @@ void Timer::ImplStartTimer( ImplSVData* pSVData, sal_uInt64 nMS )
 
 void Timer::SetDeletionFlags()
 {
-        // if no AutoTimer than stop
-        if ( !mbAuto )
-        {
-            mpSchedulerData->mbDelete = true;
-            mbActive = false;
-        }
+    // if no AutoTimer than stop
+    if ( !mbAuto )
+        Scheduler::SetDeletionFlags();
 }
 
-bool Timer::ReadyForSchedule( bool bTimer )
+bool Timer::ReadyForSchedule( bool /* bTimer */ )
 {
-    (void)bTimer;
     return (mpSchedulerData->mnUpdateTime + mnTimeout) <= tools::Time::GetSystemTicks();
 }
 
@@ -130,7 +126,7 @@ void Timer::SetTimeout( sal_uInt64 nNewTimeout )
 {
     mnTimeout = nNewTimeout;
     // if timer is active then renew clock
-    if ( mbActive )
+    if ( IsActive() )
     {
         ImplSVData* pSVData = ImplGetSVData();
         if ( !pSVData->mnUpdateStack && (mnTimeout < pSVData->mnTimerPeriod) )
