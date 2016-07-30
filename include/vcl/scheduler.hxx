@@ -30,7 +30,6 @@ struct ImplSchedulerData
     Scheduler*          mpScheduler;      // Pointer to VCL Scheduler instance
     bool                mbInScheduler;    // Scheduler currently processed?
     sal_uInt64          mnUpdateTime;   // Last Update Time
-    sal_uInt32          mnUpdateStack;  // Update Stack
 
     void Invoke();
 

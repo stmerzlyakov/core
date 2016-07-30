@@ -49,8 +49,7 @@ ImplSchedulerData *ImplSchedulerData::GetMostImportantTask( bool bTimer )
 
     for ( ImplSchedulerData *pSchedulerData = pSVData->mpFirstSchedulerData; pSchedulerData; pSchedulerData = pSchedulerData->mpNext )
     {
-        if ( !pSchedulerData->mpScheduler || pSchedulerData->mnUpdateStack >= pSVData->mnUpdateStack
-            || !pSchedulerData->mpScheduler->ReadyForSchedule( bTimer ) )
+        if ( !pSchedulerData->mpScheduler || !pSchedulerData->mpScheduler->ReadyForSchedule( bTimer ) )
             continue;
         if (!pMostUrgent)
             pMostUrgent = pSchedulerData;
@@ -115,7 +114,6 @@ void Scheduler::ProcessTaskScheduling( bool bTimer )
     ImplSVData*        pSVData = ImplGetSVData();
     sal_uInt64         nTime = tools::Time::GetSystemTicks();
     sal_uInt64         nMinPeriod = MAX_TIMER_PERIOD;
-    pSVData->mnUpdateStack++;
 
     // tdf#91727 - NB. bTimer is ultimately not used
     if ((pSchedulerData = ImplSchedulerData::GetMostImportantTask(bTimer)))
@@ -147,7 +145,6 @@ void Scheduler::ProcessTaskScheduling( bool bTimer )
         }
         else
         {
-            pSchedulerData->mnUpdateStack = 0;
             nMinPeriod = pSchedulerData->mpScheduler->UpdateMinPeriod( nMinPeriod, nTime );
             pPrevSchedulerData = pSchedulerData;
             pSchedulerData = pSchedulerData->mpNext;
@@ -165,7 +162,6 @@ void Scheduler::ProcessTaskScheduling( bool bTimer )
     {
         Timer::ImplStartTimer( pSVData, nMinPeriod );
     }
-    pSVData->mnUpdateStack--;
 }
 
 void Scheduler::SetPriority( SchedulerPriority ePriority )
@@ -198,7 +194,6 @@ void Scheduler::Start()
             pSVData->mpFirstSchedulerData = mpSchedulerData;
     }
     mpSchedulerData->mnUpdateTime  = tools::Time::GetSystemTicks();
-    mpSchedulerData->mnUpdateStack = pSVData->mnUpdateStack;
 }
 
 void Scheduler::Stop()

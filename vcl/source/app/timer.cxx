@@ -129,7 +129,7 @@ void Timer::SetTimeout( sal_uInt64 nNewTimeout )
     if ( IsActive() )
     {
         ImplSVData* pSVData = ImplGetSVData();
-        if ( !pSVData->mnUpdateStack && (mnTimeout < pSVData->mnTimerPeriod) )
+        if ( mnTimeout < pSVData->mnTimerPeriod )
             Timer::ImplStartTimer( pSVData, mnTimeout );
     }
 }
