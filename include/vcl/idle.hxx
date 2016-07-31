@@ -44,6 +44,21 @@ inline void Idle::SetIdleHdl( const Link<Idle*, void> &rLink )
         reinterpret_cast< Link<SchedulerCallback*, void>::Stub* >( rLink.GetFunction()) ));
 }
 
+/**
+ * An auto-idle is long running task processing small chunks of data, which
+ * is re-scheduled multiple times.
+ *
+ * Remember to stop the Idle when finished, as it would otherwise busy loop the CPU!
+ *
+ * It probably makes sense to re-implement ReadyForSchedule and UpdateMinPeriod,
+ * in case there is a quick check and it can otherwise sleep.
+ */
+class VCL_DLLPUBLIC AutoIdle : public Idle, public SchedulerAuto
+{
+public:
+    AutoIdle( const sal_Char *pDebugName = NULL );
+};
+
 #endif // INCLUDED_VCL_IDLE_HXX
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

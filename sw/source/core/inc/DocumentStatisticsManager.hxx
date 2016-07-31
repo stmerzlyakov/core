@@ -21,11 +21,10 @@
 
 #include <IDocumentStatistics.hxx>
 #include <boost/utility.hpp>
-#include <vcl/timer.hxx>
+#include <vcl/idle.hxx>
 
 class SwDoc;
 struct SwDocStat;
-class Timer;
 
 namespace sw {
 
@@ -60,11 +59,11 @@ private:
     bool IncrementalDocStatCalculate(long nChars, bool bFields = true);
 
     // Our own 'StatsUpdateTimer' calls the following method
-    DECL_LINK_TYPED( DoIdleStatsUpdate, Timer *, void );
+    DECL_LINK_TYPED( DoIdleStatsUpdate, Idle *, void );
 
 
     SwDocStat       *mpDocStat;          //< Statistics information.
-    Timer       maStatsUpdateTimer;      //< Timer for asynchronous stats calculation
+    AutoIdle         maStatsUpdateIdle;  //< Idle for asynchronous stats calculation
 };
 
 }

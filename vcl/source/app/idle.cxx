@@ -57,4 +57,9 @@ void Idle::UpdateMinPeriod( const sal_uInt64 /* nTime */, sal_uInt64 &nMinPeriod
     }
 }
 
+AutoIdle::AutoIdle( const sal_Char *pDebugName )
+    : Idle( pDebugName ), SchedulerAuto( pDebugName )
+{
+}
+
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

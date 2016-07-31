@@ -34,6 +34,8 @@
 #include <vector>
 #include <viewsh.hxx>
 #include <com/sun/star/document/XDocumentPropertiesSupplier.hpp>
+#include <wrtsh.hxx>
+#include <viewopt.hxx>
 
 using namespace ::com::sun::star;
 
@@ -72,10 +74,8 @@ namespace sw
 DocumentStatisticsManager::DocumentStatisticsManager( SwDoc& i_rSwdoc ) : m_rDoc( i_rSwdoc ),
                                                                           mpDocStat( new SwDocStat )
 {
-    maStatsUpdateTimer.SetTimeout( 1 );
-    maStatsUpdateTimer.SetPriority( SchedulerPriority::LOWEST );
-    maStatsUpdateTimer.SetTimeoutHdl( LINK( this, DocumentStatisticsManager, DoIdleStatsUpdate ) );
-    maStatsUpdateTimer.SetDebugName( "sw::DocumentStatisticsManager maStatsUpdateTimer" );
+    maStatsUpdateIdle.SetIdleHdl( LINK( this, DocumentStatisticsManager, DoIdleStatsUpdate ) );
+    maStatsUpdateIdle.SetDebugName( "sw::DocumentStatisticsManager maStatsUpdateIdle" );
 }
 
 void DocumentStatisticsManager::DocInfoChgd(bool const isEnableSetModified)
@@ -118,14 +118,15 @@ void DocumentStatisticsManager::UpdateDocStat( bool bCompleteAsync, bool bFields
     {
         if (!bCompleteAsync)
         {
+            maStatsUpdateIdle.Stop();
             while (IncrementalDocStatCalculate(
                         ::std::numeric_limits<long>::max(), bFields)) {}
-            maStatsUpdateTimer.Stop();
         }
-        else if (IncrementalDocStatCalculate(5000, bFields))
-            maStatsUpdateTimer.Start();
         else
-            maStatsUpdateTimer.Stop();
+        {
+            if (!maStatsUpdateIdle.IsActive() && IncrementalDocStatCalculate(5000, bFields))
+                maStatsUpdateIdle.Start();
+        }
     }
 }
 
@@ -229,20 +230,29 @@ bool DocumentStatisticsManager::IncrementalDocStatCalculate(long nChars, bool bF
     return nChars < 0;
 }
 
-IMPL_LINK_TYPED( DocumentStatisticsManager, DoIdleStatsUpdate, Timer *, pTimer, void )
+IMPL_LINK_TYPED( DocumentStatisticsManager, DoIdleStatsUpdate, Idle *, pIdle, void )
 {
-    (void)pTimer;
-    if (IncrementalDocStatCalculate(32000))
-        maStatsUpdateTimer.Start();
-
+    (void) pIdle;
     SwView* pView = m_rDoc.GetDocShell() ? m_rDoc.GetDocShell()->GetView() : NULL;
+    if( pView )
+    {
+        SwWrtShell& rWrtShell = pView->GetWrtShell();
+        if (!rWrtShell.GetViewOptions()->IsIdle())
+        {
+            return;
+        }
+    }
+
+    if (!IncrementalDocStatCalculate(32000))
+        maStatsUpdateIdle.Stop();
+
     if( pView )
         pView->UpdateDocStats();
 }
 
 DocumentStatisticsManager::~DocumentStatisticsManager()
 {
-    maStatsUpdateTimer.Stop();
+    maStatsUpdateIdle.Stop();
     delete mpDocStat;
 }
 
