@@ -166,7 +166,7 @@ class SfxAsyncExec_Impl
 {
     ::com::sun::star::util::URL aCommand;
     ::com::sun::star::uno::Reference< ::com::sun::star::frame::XDispatch > xDisp;
-    Timer           aTimer;
+    Idle            aDispatchIdle;
 
 public:
 
@@ -174,23 +174,20 @@ public:
         : aCommand( rCmd )
         , xDisp( rDisp )
     {
-        aTimer.SetTimeoutHdl( LINK(this, SfxAsyncExec_Impl, TimerHdl) );
-        aTimer.SetTimeout( 0 );
-        aTimer.SetDebugName( "sfx::SfxAsyncExec_Impl aTimer" );
-        aTimer.Start();
+        aDispatchIdle.SetIdleHdl( LINK(this, SfxAsyncExec_Impl, DispatchHdl) );
+        aDispatchIdle.SetPriority( SchedulerPriority::HIGHEST );
+        aDispatchIdle.SetDebugName( "sfx::SfxAsyncExec_Impl aDispatchIdle" );
+        aDispatchIdle.Start();
     }
 
-    DECL_LINK_TYPED( TimerHdl, Timer*, void);
+    DECL_LINK_TYPED( DispatchHdl, Idle*, void);
 };
 
-IMPL_LINK_TYPED(SfxAsyncExec_Impl, TimerHdl, Timer*, pTimer, void)
+IMPL_LINK_TYPED(SfxAsyncExec_Impl, DispatchHdl, Idle*, pIdle, void)
 {
-    (void)pTimer; // unused
-    aTimer.Stop();
-
+    (void) pIdle;
     Sequence<beans::PropertyValue> aSeq;
     xDisp->dispatch( aCommand, aSeq );
-
     delete this;
 }
 
@@ -222,7 +219,7 @@ public:
     bool                    bAllMsgDirty;   //  Has a MessageServer been invalidated?
     bool                    bAllDirty;      // After InvalidateAll
     bool                    bCtrlReleased;  // while EnterRegistrations
-    AutoTimer               aTimer;         // for volatile Slots
+    AutoTimer               aNextJobTimer;  // for volatile Slots
     bool                    bInUpdate;      // for Assertions
     bool                    bInNextJob;     // for Assertions
     bool                    bFirstRound;    // First round in Update
@@ -257,8 +254,8 @@ SfxBindings::SfxBindings()
     // all caches are valid (no pending invalidate-job)
     // create the list of caches
     pImp->pCaches = new SfxStateCacheArr_Impl;
-    pImp->aTimer.SetTimeoutHdl( LINK(this, SfxBindings, NextJob) );
-    pImp->aTimer.SetDebugName( "sfx::SfxBindings_Impl aTimer" );
+    pImp->aNextJobTimer.SetTimeoutHdl( LINK(this, SfxBindings, NextJob) );
+    pImp->aNextJobTimer.SetDebugName( "sfx::SfxBindings_Impl aNextJobTimer" );
 }
 
 
@@ -283,7 +280,7 @@ SfxBindings::~SfxBindings()
 
     ENTERREGISTRATIONS();
 
-    pImp->aTimer.Stop();
+    pImp->aNextJobTimer.Stop();
     DeleteControllers_Impl();
 
     // Delete Caches
@@ -714,9 +711,8 @@ void SfxBindings::InvalidateAll
     pImp->nMsgPos = 0;
     if ( !nRegLevel )
     {
-        pImp->aTimer.Stop();
-        pImp->aTimer.SetTimeout(TIMEOUT_FIRST);
-        pImp->aTimer.Start();
+        pImp->aNextJobTimer.SetTimeout(TIMEOUT_FIRST);
+        pImp->aNextJobTimer.Start();
     }
 }
 
@@ -766,9 +762,8 @@ void SfxBindings::Invalidate
     pImp->nMsgPos = 0;
     if ( !nRegLevel )
     {
-        pImp->aTimer.Stop();
-        pImp->aTimer.SetTimeout(TIMEOUT_FIRST);
-        pImp->aTimer.Start();
+        pImp->aNextJobTimer.SetTimeout(TIMEOUT_FIRST);
+        pImp->aNextJobTimer.Start();
     }
 }
 
@@ -820,9 +815,8 @@ void SfxBindings::InvalidateShell
         pImp->nMsgPos = 0;
         if ( !nRegLevel )
         {
-            pImp->aTimer.Stop();
-            pImp->aTimer.SetTimeout(TIMEOUT_FIRST);
-            pImp->aTimer.Start();
+            pImp->aNextJobTimer.SetTimeout(TIMEOUT_FIRST);
+            pImp->aNextJobTimer.Start();
             pImp->bFirstRound = true;
             pImp->nFirstShell = nLevel;
         }
@@ -857,9 +851,8 @@ void SfxBindings::Invalidate
         pImp->nMsgPos = std::min(GetSlotPos(nId), pImp->nMsgPos);
         if ( !nRegLevel )
         {
-            pImp->aTimer.Stop();
-            pImp->aTimer.SetTimeout(TIMEOUT_FIRST);
-            pImp->aTimer.Start();
+            pImp->aNextJobTimer.SetTimeout(TIMEOUT_FIRST);
+            pImp->aNextJobTimer.Start();
         }
     }
 }
@@ -894,9 +887,8 @@ void SfxBindings::Invalidate
         pImp->nMsgPos = std::min(GetSlotPos(nId), pImp->nMsgPos);
         if ( !nRegLevel )
         {
-            pImp->aTimer.Stop();
-            pImp->aTimer.SetTimeout(TIMEOUT_FIRST);
-            pImp->aTimer.Start();
+            pImp->aNextJobTimer.SetTimeout(TIMEOUT_FIRST);
+            pImp->aNextJobTimer.Start();
         }
     }
 }
@@ -1574,7 +1566,7 @@ bool SfxBindings::NextJob_Impl(Timer * pTimer)
 
     if ( Application::GetLastInputInterval() < MAX_INPUT_DELAY && pTimer )
     {
-        pImp->aTimer.SetTimeout(TIMEOUT_UPDATING);
+        pImp->aNextJobTimer.SetTimeout(TIMEOUT_UPDATING);
         return true;
     }
 
@@ -1602,7 +1594,7 @@ bool SfxBindings::NextJob_Impl(Timer * pTimer)
     }
 
     pImp->bAllDirty = false;
-    pImp->aTimer.SetTimeout(TIMEOUT_UPDATING);
+    pImp->aNextJobTimer.SetTimeout(TIMEOUT_UPDATING);
 
     // at least 10 loops and further if more jobs are available but no input
     bool bPreEmptive = pTimer && !pSfxApp->Get_Impl()->nInReschedule;
@@ -1664,9 +1656,9 @@ bool SfxBindings::NextJob_Impl(Timer * pTimer)
     }
 
     if (bVolatileSlotsPresent)
-        pImp->aTimer.SetTimeout(TIMEOUT_IDLE);
+        pImp->aNextJobTimer.SetTimeout(TIMEOUT_IDLE);
     else
-        pImp->aTimer.Stop();
+        pImp->aNextJobTimer.Stop();
 
     // Update round is finished
     pImp->bInNextJob = false;
@@ -1713,7 +1705,7 @@ sal_uInt16 SfxBindings::EnterRegistrations(const char *pFile, int nLine)
     if ( ++nRegLevel == 1 )
     {
         // stop background-processing
-        pImp->aTimer.Stop();
+        pImp->aNextJobTimer.Stop();
 
         // flush the cache
         pImp->nCachedFunc1 = 0;
@@ -1781,9 +1773,8 @@ void SfxBindings::LeaveRegistrations( sal_uInt16 nLevel, const char *pFile, int 
             return;
         if ( pImp->pCaches && !pImp->pCaches->empty() )
         {
-            pImp->aTimer.Stop();
-            pImp->aTimer.SetTimeout(TIMEOUT_FIRST);
-            pImp->aTimer.Start();
+            pImp->aNextJobTimer.SetTimeout(TIMEOUT_FIRST);
+            pImp->aNextJobTimer.Start();
         }
     }
 
@@ -1880,7 +1871,7 @@ void SfxBindings::StartUpdate_Impl( bool bComplete )
 
     if ( !bComplete )
         // Update may be interrupted
-        NextJob_Impl(&pImp->aTimer);
+        NextJob_Impl(&pImp->aNextJobTimer);
     else
         // Update all slots in a row
         NextJob_Impl(0);

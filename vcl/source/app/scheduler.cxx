@@ -206,21 +206,11 @@ void Scheduler::Start()
             mpSchedulerData = new ImplSchedulerData;
         mpSchedulerData->mpScheduler   = this;
         mpSchedulerData->mbInScheduler = false;
-
-        // insert last due to SFX!
-        ImplSchedulerData* pPrev = NULL;
-        ImplSchedulerData* pData = pSVData->mpFirstSchedulerData;
-        while ( pData )
-        {
-            pPrev = pData;
-            pData = pData->mpNext;
-        }
-        mpSchedulerData->mpNext = NULL;
-        if ( pPrev )
-            pPrev->mpNext = mpSchedulerData;
-        else
-            pSVData->mpFirstSchedulerData = mpSchedulerData;
+        mpSchedulerData->mpNext        = pSVData->mpFirstSchedulerData;
+        pSVData->mpFirstSchedulerData  = mpSchedulerData;
     }
+
+    assert( mpSchedulerData->mpScheduler == this );
     mpSchedulerData->mnLastTime  = tools::Time::GetSystemTicks();
 }
 
