@@ -323,6 +323,7 @@ struct ImplSVData
     ImplSchedulerData*      mpFirstSchedulerData;           ///< list of all running tasks
     ImplSchedulerData*      mpFreeSchedulerData;            ///< list of all deleted tasks for reuse
     sal_uInt64              mnTimerPeriod;                  ///< current timer period / sleep time
+    sal_uInt64              mnLastUpdate;                   ///< last scheduler time
     bool                    mbNeedsReschedule;              ///< indicator, if the list of tasks has changed
     SalTimer*               mpSalTimer;                     ///< interface to sal event loop/timers
     /** @} */

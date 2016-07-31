@@ -84,8 +84,10 @@ void Scheduler::ImplDeInitScheduler()
     pSVData->mpSalTimer = 0;
 }
 
-void Scheduler::CallbackTaskScheduling( bool bIdle )
+void Scheduler::CallbackTaskScheduling( const bool bIdle )
 {
+    ImplSVData* pSVData = ImplGetSVData();
+    pSVData->mbNeedsReschedule = true;
     Scheduler::ProcessTaskScheduling( bIdle );
 }
 
@@ -97,14 +99,19 @@ inline void Scheduler::UpdateMinPeriod( ImplSchedulerData *pSchedulerData,
     assert( nMinPeriod >= MIN_SLEEP_PERIOD );
 }
 
-void Scheduler::ProcessTaskScheduling( bool bIdle )
+void Scheduler::ProcessTaskScheduling( const bool bIdle )
 {
     ImplSVData*        pSVData = ImplGetSVData();
+    sal_uInt64         nTime = tools::Time::GetSystemTicks();
+    if (!pSVData->mbNeedsReschedule &&
+            (nTime < pSVData->mnLastUpdate + pSVData->mnTimerPeriod) )
+        return;
+    pSVData->mbNeedsReschedule = false;
+
     ImplSchedulerData* pSchedulerData = pSVData->mpFirstSchedulerData;
     ImplSchedulerData* pPrevSchedulerData = NULL;
     ImplSchedulerData *pPrevMostUrgent = NULL;
     ImplSchedulerData *pMostUrgent = NULL;
-    sal_uInt64         nTime = tools::Time::GetSystemTicks();
     sal_uInt64         nMinPeriod = MAX_SLEEP_PERIOD;
 
     while ( pSchedulerData )
@@ -184,6 +191,7 @@ next_entry:
         pSVData->mpSalTimer->Stop();
 
     pSVData->mnTimerPeriod = nMinPeriod;
+    pSVData->mnLastUpdate = nTime;
 }
 
 void Scheduler::SetPriority( SchedulerPriority ePriority )
@@ -212,6 +220,8 @@ void Scheduler::Start()
 
     assert( mpSchedulerData->mpScheduler == this );
     mpSchedulerData->mnLastTime  = tools::Time::GetSystemTicks();
+
+    pSVData->mbNeedsReschedule = true;
 }
 
 void Scheduler::Stop()
