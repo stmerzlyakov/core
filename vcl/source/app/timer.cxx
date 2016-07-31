@@ -38,13 +38,6 @@ void Timer::ImplStartTimer( ImplSVData* pSVData, sal_uInt64 nMS )
     }
 }
 
-void Timer::SetDeletionFlags()
-{
-    // if no AutoTimer than stop
-    if ( !mbAuto )
-        Scheduler::SetDeletionFlags();
-}
-
 bool Timer::ReadyForSchedule( const sal_uInt64 nTime, bool /* bIdle */ )
 {
     return (mpSchedulerData->mnLastTime + mnTimeout) <= nTime;
@@ -78,23 +71,9 @@ void Timer::InitSystemTimer()
     }
 }
 
-Timer::Timer(const sal_Char *pDebugName) : Scheduler(pDebugName)
+Timer::Timer( const sal_Char *pDebugName ) : SchedulerCallback( pDebugName )
 {
-    mnTimeout = 1;
-    mbAuto = false;
-    mePriority = SchedulerPriority::HIGHEST;
-}
-
-Timer::Timer( const Timer& rTimer ) : Scheduler(rTimer)
-{
-    mnTimeout = rTimer.mnTimeout;
-    mbAuto = rTimer.mbAuto;
-    maTimeoutHdl = rTimer.maTimeoutHdl;
-}
-
-void Timer::Invoke()
-{
-    maTimeoutHdl.Call( this );
+    mnTimeout    = MIN_SLEEP_PERIOD;
 }
 
 void Timer::Start()
@@ -118,27 +97,9 @@ void Timer::SetTimeout( sal_uInt64 nNewTimeout )
     }
 }
 
-Timer& Timer::operator=( const Timer& rTimer )
+AutoTimer::AutoTimer( const sal_Char *pDebugName )
+    : Timer( pDebugName ), SchedulerAuto( pDebugName )
 {
-    Scheduler::operator=(rTimer);
-    mnTimeout = rTimer.mnTimeout;
-    mbAuto = rTimer.mbAuto;
-    return *this;
 }
 
-AutoTimer::AutoTimer()
-{
-    mbAuto = true;
-}
-
-AutoTimer::AutoTimer( const AutoTimer& rTimer ) : Timer( rTimer )
-{
-    mbAuto = true;
-}
-
-AutoTimer& AutoTimer::operator=( const AutoTimer& rTimer )
-{
-    Timer::operator=( rTimer );
-    return *this;
-}
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

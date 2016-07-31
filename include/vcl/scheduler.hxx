@@ -115,6 +115,13 @@ public:
     bool            HasInvokeHandler() const { return maInvokeHandler.IsSet(); }
 };
 
+class VCL_DLLPUBLIC SchedulerAuto : public virtual Scheduler
+{
+protected:
+    SchedulerAuto( const sal_Char *pDebugName = NULL ): Scheduler( pDebugName ) {}
+    virtual void    SetDeletionFlags() SAL_OVERRIDE;
+};
+
 #endif // INCLUDED_VCL_SCHEDULER_HXX
 
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

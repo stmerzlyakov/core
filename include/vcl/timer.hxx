@@ -28,10 +28,8 @@ struct ImplSVData;
 class VCL_DLLPUBLIC Timer : public SchedulerCallback
 {
 protected:
-    bool            mbAuto;
     sal_uInt64   mnTimeout;
 
-    virtual void SetDeletionFlags() SAL_OVERRIDE;
     virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bIdle ) SAL_OVERRIDE;
     virtual void UpdateMinPeriod( const sal_uInt64 nTime, sal_uInt64 &nMinPeriod ) SAL_OVERRIDE;
 
@@ -40,11 +38,9 @@ private:
 
 public:
     Timer( const sal_Char *pDebugName = NULL );
-    Timer( const Timer& rTimer );
 
     void            SetTimeout( sal_uInt64 nTimeoutMs );
     sal_uInt64      GetTimeout() const { return mnTimeout; }
-    Timer&          operator=( const Timer& rTimer );
     virtual void    Start() SAL_OVERRIDE;
 
     void            SetTimeoutHdl( const Link<Timer*, void> &rLink );
@@ -61,13 +57,10 @@ inline void Timer::SetTimeoutHdl( const Link<Timer*, void> &rLink )
 
 /// An auto-timer is a multi-shot timer re-emitting itself at
 /// interval until destroyed.
-class VCL_DLLPUBLIC AutoTimer : public Timer
+class VCL_DLLPUBLIC AutoTimer : public Timer, public SchedulerAuto
 {
 public:
-                    AutoTimer();
-                    AutoTimer( const AutoTimer& rTimer );
-
-    AutoTimer&      operator=( const AutoTimer& rTimer );
+    AutoTimer( const sal_Char *pDebugName = NULL );
 };
 
 #endif // INCLUDED_VCL_TIMER_HXX

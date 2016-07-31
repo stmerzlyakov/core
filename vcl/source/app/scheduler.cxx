@@ -285,4 +285,8 @@ void SchedulerCallback::Invoke()
     maInvokeHandler.Call( this );
 }
 
+void SchedulerAuto::SetDeletionFlags()
+{
+}
+
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */
