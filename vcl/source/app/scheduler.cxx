@@ -86,7 +86,6 @@ void Scheduler::ImplDeInitScheduler()
 
 void Scheduler::CallbackTaskScheduling( bool bIdle )
 {
-    // this function is for the saltimer callback
     Scheduler::ProcessTaskScheduling( bIdle );
 }
 
@@ -100,8 +99,6 @@ inline void Scheduler::UpdateMinPeriod( ImplSchedulerData *pSchedulerData,
 
 void Scheduler::ProcessTaskScheduling( bool bIdle )
 {
-    // process all pending Tasks
-    // if bIdle is false, only handle timer
     ImplSVData*        pSVData = ImplGetSVData();
     ImplSchedulerData* pSchedulerData = pSVData->mpFirstSchedulerData;
     ImplSchedulerData* pPrevSchedulerData = NULL;

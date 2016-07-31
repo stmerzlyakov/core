@@ -309,27 +309,35 @@ struct ImplSVData
     ImplSVData();
 
     SalData*                mpSalData;
-    SalInstance*            mpDefInst;                      // Default SalInstance
-    Application*            mpApp;                          // pApp
-    VclPtr<WorkWindow>      mpDefaultWin;                   // Default-Window
-    bool                    mbDeInit;                       // Is VCL deinitializing
-    sal_uLong               mnThreadCount;                  // is VCL MultiThread enabled
-    ImplConfigData*         mpFirstConfigData;              // pointer to the first config block
-    ImplSchedulerData*      mpFirstSchedulerData;           // list of all running tasks
-    ImplSchedulerData*      mpFreeSchedulerData;            // list of all deleted tasks for reuse
-    SalTimer*               mpSalTimer;                     // interface to sal event loop/timers
-    SalI18NImeStatus*       mpImeStatus;                    // interface to ime status window
-    SalSystem*              mpSalSystem;                    // SalSystem interface
-    ResMgr*                 mpResMgr;                       // SV-Resource-Manager
-    sal_uInt64              mnTimerPeriod;                  // current timer period
-    ImplSVAppData           maAppData;                      // indepen data for class Application
-    ImplSVGDIData           maGDIData;                      // indepen data for Output classes
-    ImplSVWinData           maWinData;                      // indepen data for Windows classes
-    ImplSVCtrlData          maCtrlData;                     // indepen data for Control classes
-    ImplSVHelpData          maHelpData;                     // indepen data for Help classes
+    SalInstance*            mpDefInst;                      ///< Default SalInstance
+    Application*            mpApp;                          ///< pApp
+    VclPtr<WorkWindow>      mpDefaultWin;                   ///< Default-Window
+    bool                    mbDeInit;                       ///< Is VCL deinitializing
+    sal_uLong               mnThreadCount;                  ///< is VCL MultiThread enabled
+    ImplConfigData*         mpFirstConfigData;              ///< pointer to the first config block
+
+    /**
+     * @defgroup scheduler Data used for task scheduling
+     * @addtogroup scheduler
+     * @{ */
+    ImplSchedulerData*      mpFirstSchedulerData;           ///< list of all running tasks
+    ImplSchedulerData*      mpFreeSchedulerData;            ///< list of all deleted tasks for reuse
+    sal_uInt64              mnTimerPeriod;                  ///< current timer period / sleep time
+    bool                    mbNeedsReschedule;              ///< indicator, if the list of tasks has changed
+    SalTimer*               mpSalTimer;                     ///< interface to sal event loop/timers
+    /** @} */
+
+    SalI18NImeStatus*       mpImeStatus;                    ///< interface to ime status window
+    SalSystem*              mpSalSystem;                    ///< SalSystem interface
+    ResMgr*                 mpResMgr;                       ///< SV-Resource-Manager
+    ImplSVAppData           maAppData;                      ///< indepen data for class Application
+    ImplSVGDIData           maGDIData;                      ///< indepen data for Output classes
+    ImplSVWinData           maWinData;                      ///< indepen data for Windows classes
+    ImplSVCtrlData          maCtrlData;                     ///< indepen data for Control classes
+    ImplSVHelpData          maHelpData;                     ///< indepen data for Help classes
     ImplSVNWFData           maNWFData;
     UnoWrapperBase*         mpUnoWrapper;
-    VclPtr<vcl::Window>     mpIntroWindow;                  // the splash screen
+    VclPtr<vcl::Window>     mpIntroWindow;                  ///< the splash screen
     DockingManager*         mpDockingManager;
     BlendFrameCache*        mpBlendFrameCache;
     bool                    mbIsTestTool;

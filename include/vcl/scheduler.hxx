@@ -28,14 +28,15 @@
 class Scheduler;
 struct ImplSchedulerData
 {
-    ImplSchedulerData*  mpNext;      // Pointer to the next element in list
-    Scheduler*          mpScheduler;      // Pointer to VCL Scheduler instance
-    bool                mbInScheduler;    // Scheduler currently processed?
-    sal_uInt64          mnLastTime;   // Last Update Time
+    ImplSchedulerData*  mpNext;         ///< Pointer to the next element in list
+    Scheduler*          mpScheduler;    ///< Pointer to VCL Scheduler instance, NULL if to be removed
+    bool                mbInScheduler;  ///< Is the Scheduler / task currently processed? Used to prevent recursive processing.
+    sal_uInt64          mnLastTime;     ///< Timestamp, when the task was scheduled / invoked / running last
 
     void Invoke();
 };
 
+/// Higher priority = smaller number!
 enum class SchedulerPriority {
     HIGHEST   = 0,
     HIGH      = 1,
@@ -49,32 +50,46 @@ enum class SchedulerPriority {
 
 class VCL_DLLPUBLIC Scheduler
 {
+    friend struct ImplSchedulerData;
+
 private:
     static inline void UpdateMinPeriod( ImplSchedulerData *pSchedulerData,
                                         const sal_uInt64 nTime, sal_uInt64 &nMinPeriod );
 
 protected:
-    ImplSchedulerData*  mpSchedulerData;    /// Pointer to element in scheduler list
-    const sal_Char     *mpDebugName;        /// Useful for debugging
-    SchedulerPriority   mePriority;         /// Scheduler priority
+    ImplSchedulerData  *mpSchedulerData;  ///< Pointer to the element in scheduler list, when active
+    const sal_Char     *mpDebugName;      ///< Name to identify the Scheduler origin (for debugging)
+    SchedulerPriority   mePriority;       ///< Scheduler priority
 
-    friend struct ImplSchedulerData;
     virtual void SetDeletionFlags();
     virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bIdle ) = 0;
+    // determine smallest time period to sleep
     virtual void UpdateMinPeriod( const sal_uInt64 nTime, sal_uInt64 &nMinPeriod ) = 0;
+
+protected:
+    /**
+     * Process the pending task with the highest priority
+     *
+     * This function is called by the yield timer. It actually just calls
+     * Scheduler::ProcessTaskScheduling and enforces recheduling by setting
+     * pSVData->mbNeedsReschedule.
+     *
+     * @param bIdle if false, don't process tasks with priority >= DEFAULT_IDLE
+     */
+    static void CallbackTaskScheduling( const bool bIdle );
 
 public:
     Scheduler( const sal_Char *pDebugName = NULL );
     Scheduler( const Scheduler& rScheduler );
     virtual ~Scheduler();
+    Scheduler& operator=( const Scheduler& rScheduler );
 
-    void SetPriority( SchedulerPriority ePriority );
+    void              SetPriority( SchedulerPriority ePriority );
     SchedulerPriority GetPriority() const { return mePriority; }
 
     void            SetDebugName( const sal_Char *pDebugName ) { mpDebugName = pDebugName; }
-    const sal_Char *GetDebugName() { return mpDebugName; }
+    const sal_Char* GetDebugName() const { return mpDebugName; }
 
-    // Call handler
     virtual void    Invoke() = 0;
 
     virtual void    Start();
@@ -82,13 +97,14 @@ public:
 
     inline bool     IsActive() const;
 
-    Scheduler&          operator=( const Scheduler& rScheduler );
-    static void ImplDeInitScheduler();
+    static void     ImplDeInitScheduler();
 
-    // Process one pending Timer with highhest priority
-    static void CallbackTaskScheduling( bool ignore );
-    /// Process one pending task ahead of time with highhest priority.
-    static void ProcessTaskScheduling( bool bIdle );
+    /**
+     * Process the pending task with highest priority
+     *
+     * @param bIdle if false, don't process tasks with priority >= DEFAULT_IDLE
+     */
+    static void     ProcessTaskScheduling( const bool bIdle );
 };
 
 inline bool Scheduler::IsActive() const
