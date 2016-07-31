@@ -676,7 +676,7 @@ IMPL_LINK_NOARG_TYPED(Window, ImplHandleResizeTimerHdl, Idle *, void)
         else if( mpWindowImpl->mpFrameData->maPaintIdle.IsActive() )
         {
             mpWindowImpl->mpFrameData->maPaintIdle.Stop();
-            mpWindowImpl->mpFrameData->maPaintIdle.GetIdleHdl().Call( NULL );
+            mpWindowImpl->mpFrameData->maPaintIdle.Invoke( NULL );
         }
     }
 }

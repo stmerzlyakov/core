@@ -23,27 +23,26 @@
 #include <tools/link.hxx>
 #include <vcl/scheduler.hxx>
 
-class VCL_DLLPUBLIC Idle : public Scheduler
+class VCL_DLLPUBLIC Idle : public SchedulerCallback
 {
 protected:
-    Link<Idle *, void> maIdleHdl;          // Callback Link
-
     virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bIdle ) SAL_OVERRIDE;
     virtual void UpdateMinPeriod( const sal_uInt64 nTime, sal_uInt64 &nMinPeriod ) SAL_OVERRIDE;
 
 public:
     Idle( const sal_Char *pDebugName = NULL );
-    Idle( const Idle& rIdle );
 
-    virtual void    Start() SAL_OVERRIDE;
+    void SetIdleHdl( const Link<Idle*, void> &rLink );
 
-    /// Make it possible to associate a callback with this idle handler
-    /// of course, you can also sub-class and override 'Invoke'
-    void            SetIdleHdl( const Link<Idle *, void>& rLink ) { maIdleHdl = rLink; }
-    const Link<Idle *, void>& GetIdleHdl() const { return maIdleHdl; }
-    virtual void Invoke() SAL_OVERRIDE;
-    Idle&           operator=( const Idle& rIdle );
+    virtual void Start() SAL_OVERRIDE;
 };
+
+inline void Idle::SetIdleHdl( const Link<Idle*, void> &rLink )
+{
+    SetInvokeHandler( Link<SchedulerCallback*, void>(
+        static_cast<SchedulerCallback*>( rLink.GetInstance() ),
+        reinterpret_cast< Link<SchedulerCallback*, void>::Stub* >( rLink.GetFunction()) ));
+}
 
 #endif // INCLUDED_VCL_IDLE_HXX
 

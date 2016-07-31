@@ -97,14 +97,11 @@ OLEObjCache::OLEObjCache()
 {
     nSize = officecfg::Office::Common::Cache::DrawingEngine::OLE_Objects::get();
     pTimer = new AutoTimer();
-    Link<Timer *, void> aLink = LINK(this, OLEObjCache, UnloadCheckHdl);
-
-    pTimer->SetTimeoutHdl(aLink);
+    pTimer->SetTimeoutHdl( LINK(this, OLEObjCache, UnloadCheckHdl) );
     pTimer->SetTimeout(20000);
-    pTimer->Start();
     pTimer->SetDebugName("svx::OLEObjCache pTimer UnloadCheck");
-
-    aLink.Call(pTimer);
+    pTimer->Invoke();
+    pTimer->Start();
 }
 
 OLEObjCache::~OLEObjCache()

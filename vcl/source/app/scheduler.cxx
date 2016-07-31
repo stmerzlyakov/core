@@ -270,4 +270,19 @@ Scheduler::~Scheduler()
         mpSchedulerData->mpScheduler = NULL;
 }
 
+SchedulerCallback::SchedulerCallback( const sal_Char *pDebugName )
+    : Scheduler( pDebugName )
+{
+}
+
+void SchedulerCallback::Invoke( SchedulerCallback *arg )
+{
+    maInvokeHandler.Call( arg );
+}
+
+void SchedulerCallback::Invoke()
+{
+    maInvokeHandler.Call( this );
+}
+
 /* vim:set shiftwidth=4 softtabstop=4 expandtab: */

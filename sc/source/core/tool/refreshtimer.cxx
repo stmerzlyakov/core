@@ -57,7 +57,8 @@ ScRefreshTimer::ScRefreshTimer( sal_uLong nSeconds ) : ppControl(0)
     Launch();
 }
 
-ScRefreshTimer::ScRefreshTimer( const ScRefreshTimer& r ) : AutoTimer( r ), ppControl(0)
+ScRefreshTimer::ScRefreshTimer( const ScRefreshTimer& r )
+    : Scheduler( r ), AutoTimer( r ), ppControl(0)
 {
 }
 
@@ -120,7 +121,7 @@ void ScRefreshTimer::Invoke()
     {
         // now we COULD make the call in another thread ...
         ::osl::MutexGuard aGuard( (*ppControl)->GetMutex() );
-        maTimeoutHdl.Call( this );
+        Invoke();
         // restart from now on, don't execute immediately again if timed out
         // a second time during refresh
         if ( IsActive() )

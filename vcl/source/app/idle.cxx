@@ -19,27 +19,11 @@
 
 #include <vcl/idle.hxx>
 #include <vcl/timer.hxx>
+
 #include "svdata.hxx"
 
-void Idle::Invoke()
+Idle::Idle( const sal_Char *pDebugName ) : SchedulerCallback( pDebugName )
 {
-    maIdleHdl.Call( this );
-}
-
-Idle& Idle::operator=( const Idle& rIdle )
-{
-    Scheduler::operator=(rIdle);
-    maIdleHdl = rIdle.maIdleHdl;
-    return *this;
-}
-
-Idle::Idle( const sal_Char *pDebugName ) : Scheduler( pDebugName )
-{
-}
-
-Idle::Idle( const Idle& rIdle ) : Scheduler(rIdle)
-{
-    maIdleHdl = rIdle.maIdleHdl;
 }
 
 void Idle::Start()

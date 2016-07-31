@@ -25,7 +25,6 @@
 #define MIN_SLEEP_PERIOD   1
 #define MAX_SLEEP_PERIOD   SAL_MAX_UINT64
 
-struct ImplSVData;
 class Scheduler;
 struct ImplSchedulerData
 {
@@ -96,6 +95,25 @@ inline bool Scheduler::IsActive() const
 {
     return NULL != mpSchedulerData;
 }
+
+class VCL_DLLPUBLIC SchedulerCallback : public virtual Scheduler
+{
+public:
+    typedef Link<SchedulerCallback*, void> InvokeHandler;
+
+private:
+    InvokeHandler   maInvokeHandler;  ///< Default handler to be invoked when scheduled
+
+protected:
+    SchedulerCallback( const sal_Char *pDebugName = NULL );
+
+public:
+    // Call the invoke handler with *this* as parameter
+    virtual void    Invoke() SAL_OVERRIDE;
+    void            Invoke( SchedulerCallback* arg );
+    void            SetInvokeHandler( const InvokeHandler &rLink ) { maInvokeHandler = rLink; }
+    bool            HasInvokeHandler() const { return maInvokeHandler.IsSet(); }
+};
 
 #endif // INCLUDED_VCL_SCHEDULER_HXX
 

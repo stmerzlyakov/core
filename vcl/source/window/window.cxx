@@ -2531,7 +2531,7 @@ Size Window::GetSizePixel() const
     {
         ImplDelData aDogtag( const_cast<Window*>(this) );
         mpWindowImpl->mpFrameData->maResizeIdle.Stop();
-        mpWindowImpl->mpFrameData->maResizeIdle.GetIdleHdl().Call( NULL );
+        mpWindowImpl->mpFrameData->maResizeIdle.Invoke( NULL );
         if( aDogtag.IsDead() )
             return Size(0,0);
     }

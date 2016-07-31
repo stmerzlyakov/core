@@ -79,6 +79,7 @@ ScDBData::ScDBData( const OUString& rName,
 }
 
 ScDBData::ScDBData( const ScDBData& rData ) :
+    Scheduler           ( rData ),
     ScRefreshTimer      ( rData ),
     mpSortParam(new ScSortParam(*rData.mpSortParam)),
     mpQueryParam(new ScQueryParam(*rData.mpQueryParam)),

@@ -139,7 +139,9 @@ public:
     { return function_ == other.function_ && instance_ == other.instance_; };
 
     bool operator !=(Link const & other) const { return !operator ==(other); };
-    void *GetInstance() const { return instance_; }
+
+    void* GetInstance() const { return instance_; }
+    Stub* GetFunction() const { return function_; }
 
 private:
     Stub * function_;

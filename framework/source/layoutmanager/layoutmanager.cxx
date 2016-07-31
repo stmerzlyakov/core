@@ -2677,11 +2677,9 @@ throw( uno::RuntimeException, std::exception )
         // application modules need this. So we have to check if this is the first
         // call after the async layout time expired.
         m_bMustDoLayout = true;
-        if ( !m_aAsyncLayoutTimer.IsActive() )
+        if ( !m_aAsyncLayoutTimer.IsActive() && m_aAsyncLayoutTimer.HasInvokeHandler() )
         {
-            const Link<Timer *, void>& aLink = m_aAsyncLayoutTimer.GetTimeoutHdl();
-            if ( aLink.IsSet() )
-                aLink.Call( &m_aAsyncLayoutTimer );
+            m_aAsyncLayoutTimer.Invoke();
         }
         if ( m_nLockCount == 0 )
             m_aAsyncLayoutTimer.Start();

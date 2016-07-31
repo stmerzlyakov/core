@@ -23,12 +23,13 @@
 #include <tools/link.hxx>
 #include <vcl/scheduler.hxx>
 
-class VCL_DLLPUBLIC Timer : public Scheduler
+struct ImplSVData;
+
+class VCL_DLLPUBLIC Timer : public SchedulerCallback
 {
 protected:
-    Link<Timer *, void> maTimeoutHdl;          // Callback Link
-    sal_uInt64      mnTimeout;
     bool            mbAuto;
+    sal_uInt64   mnTimeout;
 
     virtual void SetDeletionFlags() SAL_OVERRIDE;
     virtual bool ReadyForSchedule( const sal_uInt64 nTime, const bool bIdle ) SAL_OVERRIDE;
@@ -41,18 +42,22 @@ public:
     Timer( const sal_Char *pDebugName = NULL );
     Timer( const Timer& rTimer );
 
-    /// Make it possible to associate a callback with this timer handler
-    /// of course, you can also sub-class and override 'Invoke'
-    void            SetTimeoutHdl( const Link<Timer *, void>& rLink ) { maTimeoutHdl = rLink; }
-    const Link<Timer *, void>& GetTimeoutHdl() const { return maTimeoutHdl; }
     void            SetTimeout( sal_uInt64 nTimeoutMs );
     sal_uInt64      GetTimeout() const { return mnTimeout; }
-    virtual void    Invoke() SAL_OVERRIDE;
-    void            Timeout() { Invoke(); }
     Timer&          operator=( const Timer& rTimer );
     virtual void    Start() SAL_OVERRIDE;
+
+    void            SetTimeoutHdl( const Link<Timer*, void> &rLink );
+
     static void     ImplStartTimer( ImplSVData* pSVData, sal_uInt64 nMS );
 };
+
+inline void Timer::SetTimeoutHdl( const Link<Timer*, void> &rLink )
+{
+    SetInvokeHandler( Link<SchedulerCallback*, void>(
+        static_cast<SchedulerCallback*>( rLink.GetInstance() ),
+        reinterpret_cast< Link<SchedulerCallback*, void>::Stub* >( rLink.GetFunction()) ));
+}
 
 /// An auto-timer is a multi-shot timer re-emitting itself at
 /// interval until destroyed.

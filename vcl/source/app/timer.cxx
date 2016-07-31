@@ -121,7 +121,6 @@ void Timer::SetTimeout( sal_uInt64 nNewTimeout )
 Timer& Timer::operator=( const Timer& rTimer )
 {
     Scheduler::operator=(rTimer);
-    maTimeoutHdl = rTimer.maTimeoutHdl;
     mnTimeout = rTimer.mnTimeout;
     mbAuto = rTimer.mbAuto;
     return *this;
