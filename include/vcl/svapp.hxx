@@ -458,18 +458,14 @@ public:
     /** Run the main event processing loop until it is quit by Quit().
 
      @see Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
+          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex
     */
     static void                 Execute();
 
     /** Quit the program
 
      @see Execute, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
+          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex
     */
     static void                 Quit();
 
@@ -480,27 +476,21 @@ public:
         event. Defaults to false.
 
      @see Execute, Quit, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
+          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex
      */
     static void                 Reschedule( bool bAllEvents = false );
 
     /** Allow processing of the next event.
 
      @see Execute, Quit, Reschedule, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
+          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex
     */
     static void                 Yield();
 
     /**
 
      @see Execute, Quit, Reschedule, Yield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
+          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex
     */
     static void                 EndYield();
 
@@ -512,9 +502,7 @@ public:
      @returns SolarMutex reference
 
      @see Execute, Quit, Reschedule, Yield, EndYield,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
+          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex
     */
     static comphelper::SolarMutex& GetSolarMutex();
 
@@ -523,9 +511,7 @@ public:
      @returns oslThreadIdentifier that contains the thread ID
 
      @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
+          ReleaseSolarMutex, AcquireSolarMutex
     */
     static oslThreadIdentifier  GetMainThreadIdentifier();
 
@@ -537,9 +523,7 @@ public:
      @returns The number of mutexes that were acquired by this thread.
 
      @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
+          GetMainThreadIdentifier, AcquireSolarMutex
     */
     static sal_uLong            ReleaseSolarMutex();
 
@@ -549,59 +533,9 @@ public:
      VCL concurrently.
 
      @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, AddPostYieldListener,
-          RemovePostYieldListener
+          GetMainThreadIdentifier, ReleaseSolarMutex
     */
     static void                 AcquireSolarMutex( sal_uLong nCount );
-
-    /** @brief Enables "no yield" mode
-
-     "No yield" mode prevents Yield() from waiting for events.
-
-     @remarks This was originally implemented in OOo bug 98792 to improve
-        Impress slideshows.
-
-     @see DisableNoYieldMode, Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          DisableNoYield, AddPostYieldListener, RemovePostYieldListener
-    */
-    static void                 EnableNoYieldMode();
-
-    /** @brief Disables "no yield" mode
-
-     "No yield" mode prevents Yield() from waiting for events.
-
-     @remarks This was originally implemented in OOo bug 98792 to improve
-        Impress slideshows.
-
-     @see EnableNoYieldMode, Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYield, AddPostYieldListener, RemovePostYieldListener
-    */
-
-    static void                 DisableNoYieldMode();
-
-    /** Add a listener for yield events
-
-     @param  i_rListener     Listener to add
-
-     @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          EnableNoYieldMode, DisableNoYieldMode, RemovePostYieldListener
-    */
-    static void                 AddPostYieldListener( const Link<>& i_rListener );
-
-    /** Remove listener for yield events
-
-     @param  i_rListener     Listener to remove
-
-     @see Execute, Quit, Reschedule, Yield, EndYield, GetSolarMutex,
-          GetMainThreadIdentifier, ReleaseSolarMutex, AcquireSolarMutex,
-          AddPostYieldListener, EnableNoYieldMode, DisableNoYieldMode
-    */
-    static void                 RemovePostYieldListener( const Link<>& i_rListener );
-
 
     /** Queries whether the application is in "main", i.e. not yet in
         the event loop

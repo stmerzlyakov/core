@@ -275,7 +275,6 @@ private:
     void setActiveXToolbarsVisible( bool bVisible );
 
     DECL_LINK_TYPED(updateHdl, Timer *, void);
-    DECL_LINK( PostYieldListener, void* );
     DECL_LINK_TYPED(ReadyForNextInputHdl, Timer *, void);
     DECL_LINK( endPresentationHdl, void* );
     DECL_LINK( ContextMenuSelectHdl, Menu * );
@@ -322,7 +321,7 @@ private:
     rtl::Reference<sd::SlideShowView> mxView;
     css::uno::Reference< css::frame::XModel > mxModel;
 
-    Timer maUpdateTimer;
+    AutoTimer maUpdateTimer;
     Timer maInputFreezeTimer;
     Timer maDeactivateTimer;
 

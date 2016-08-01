@@ -125,7 +125,6 @@ struct ImplSVAppData
     VclPtr<ImplWheelWindow> mpWheelWindow;                  // WheelWindow
     ImplHotKey*             mpFirstHotKey;                  // HotKey-Verwaltung
     ImplEventHook*          mpFirstEventHook;               // Event-Hooks
-    VclEventListeners2*     mpPostYieldListeners;           // post yield listeners
     sal_uInt64              mnLastInputTime;                // GetLastInputTime()
     sal_uInt16              mnDispatchLevel;                // DispatchLevel
     sal_uInt16              mnModalMode;                    // ModalMode Count
@@ -137,8 +136,6 @@ struct ImplSVAppData
     bool                    mbInAppExecute;                 // is Application::Execute() on stack
     bool                    mbAppQuit;                      // is Application::Quit() called
     bool                    mbSettingsInit;                 // true: Settings are initialized
-    bool                    mbNoYield;                      // Application::Yield will not wait for events if the queue is empty
-                                                            // essentially that makes it the same as Application::Reschedule
     Application::DialogCancelMode meDialogCancel;           // true: All Dialog::Execute() calls will be terminated immediately with return false
 
     /** Controls whether showing any IME status window is toggled on or off.

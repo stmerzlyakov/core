@@ -746,9 +746,6 @@ void SAL_CALL SlideshowImpl::disposing()
 
     setActiveXToolbarsVisible( true );
 
-    Application::DisableNoYieldMode();
-    Application::RemovePostYieldListener(LINK(this, SlideshowImpl, PostYieldListener));
-
     mbDisposed = true;
 }
 
@@ -1789,22 +1786,6 @@ IMPL_LINK_NOARG_TYPED(SlideshowImpl, updateHdl, Timer *, void)
     updateSlideShow();
 }
 
-IMPL_LINK_NOARG(SlideshowImpl, PostYieldListener)
-{
-    // prevent me from deletion when recursing (App::Reschedule does)
-    const rtl::Reference<SlideshowImpl> this_(this);
-
-    Application::DisableNoYieldMode();
-    Application::RemovePostYieldListener(LINK(this, SlideshowImpl, PostYieldListener));
-    Application::Reschedule(true); // fix for fdo#32861 - process
-                                   // *all* outstanding events after
-                                   // yield is done.
-    if (mbDisposed)
-        return 0;
-    Application::Reschedule(true);
-    return updateSlideShow();
-}
-
 sal_Int32 SlideshowImpl::updateSlideShow()
 {
     // prevent me from deletion when recursing (App::EnableYieldMode does)
@@ -1829,13 +1810,7 @@ sal_Int32 SlideshowImpl::updateSlideShow()
 
         if (mxShow.is() && (fUpdate >= 0.0))
         {
-            if (::basegfx::fTools::equalZero(fUpdate))
-            {
-                // Use post yield listener for short update intervalls.
-                Application::EnableNoYieldMode();
-                Application::AddPostYieldListener(LINK(this, SlideshowImpl, PostYieldListener));
-            }
-            else
+            if (!::basegfx::fTools::equalZero(fUpdate))
             {
                 // Avoid busy loop when the previous call to update()
                 // returns a small positive number but not 0 (which is
@@ -1853,14 +1828,14 @@ sal_Int32 SlideshowImpl::updateSlideShow()
                 // integer may lead to zero value.)
                 OSL_ASSERT(static_cast<sal_uLong>(fUpdate * 1000.0) > 0);
 
-                Application::DisableNoYieldMode();
-                Application::RemovePostYieldListener(LINK(this, SlideshowImpl, PostYieldListener));
-
                 // Use a timer for the asynchronous callback.
                 maUpdateTimer.SetTimeout(static_cast<sal_uLong>(fUpdate * 1000.0));
-                maUpdateTimer.Start();
+                if (!maUpdateTimer.IsActive())
+                    maUpdateTimer.Start();
             }
         }
+        else
+            maUpdateTimer.SetTimeout( 500 );
     }
     catch( Exception& )
     {

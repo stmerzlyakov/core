@@ -342,34 +342,21 @@ inline void ImplYield( bool i_bWait, bool i_bAllEvents )
 {
     ImplSVData* pSVData = ImplGetSVData();
 
-    //Process all Tasks
-    Scheduler::ProcessTaskScheduling( true );
-
     pSVData->maAppData.mnDispatchLevel++;
     // do not wait for events if application was already quit; in that
     // case only dispatch events already available
-    // do not wait for events either if the app decided that it is too busy for timers
-    // (feature added for the slideshow)
-    pSVData->mpDefInst->Yield( i_bWait && !pSVData->maAppData.mbAppQuit && !pSVData->maAppData.mbNoYield, i_bAllEvents );
+    bool bDoIdleWait = i_bWait && !pSVData->maAppData.mbAppQuit;
+    pSVData->mpDefInst->Yield( bDoIdleWait, i_bAllEvents );
     pSVData->maAppData.mnDispatchLevel--;
 
     DBG_TESTSOLARMUTEX(); // must be locked on return from Yield
 
+    // process one pending task
+    Scheduler::ProcessTaskScheduling( bDoIdleWait );
+
     // flush lazy deleted objects
     if( pSVData->maAppData.mnDispatchLevel == 0 )
         vcl::LazyDelete::flush();
-
-    // the system timer events will not necessarily come in non waiting mode
-    // e.g. on OS X; need to trigger timer checks manually
-    if( pSVData->maAppData.mbNoYield )
-    {
-        //Process all timers
-        Scheduler::ProcessTaskScheduling( false );
-    }
-
-    // call post yield listeners
-    if( pSVData->maAppData.mpPostYieldListeners )
-        pSVData->maAppData.mpPostYieldListeners->callListeners( NULL );
 }
 
 void Application::Reschedule( bool i_bAllEvents )
@@ -963,33 +950,6 @@ void Application::RemoveIdleHdl( const Link<>& rLink )
 
     if ( pSVData->maAppData.mpIdleMgr )
         pSVData->maAppData.mpIdleMgr->RemoveIdleHdl( rLink );
-}
-
-void Application::EnableNoYieldMode()
-{
-    ImplSVData* pSVData = ImplGetSVData();
-    pSVData->maAppData.mbNoYield = true;
-}
-
-void Application::DisableNoYieldMode()
-{
-    ImplSVData* pSVData = ImplGetSVData();
-    pSVData->maAppData.mbNoYield = false;
-}
-
-void Application::AddPostYieldListener( const Link<>& i_rListener )
-{
-    ImplSVData* pSVData = ImplGetSVData();
-    if( ! pSVData->maAppData.mpPostYieldListeners )
-        pSVData->maAppData.mpPostYieldListeners = new VclEventListeners2();
-    pSVData->maAppData.mpPostYieldListeners->addListener( i_rListener );
-}
-
-void Application::RemovePostYieldListener( const Link<>& i_rListener )
-{
-    ImplSVData* pSVData = ImplGetSVData();
-    if( pSVData->maAppData.mpPostYieldListeners )
-        pSVData->maAppData.mpPostYieldListeners->removeListener( i_rListener );
 }
 
 WorkWindow* Application::GetAppWindow()
