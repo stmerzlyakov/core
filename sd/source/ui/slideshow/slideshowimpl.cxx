@@ -538,6 +538,7 @@ SlideshowImpl::SlideshowImpl( const Reference< XPresentation2 >& xPresentation, 
         mpOldActiveWindow = mpViewShell->GetActiveWindow();
 
     maUpdateTimer.SetTimeoutHdl(LINK(this, SlideshowImpl, updateHdl));
+    maUpdateTimer.SetPriority( SchedulerPriority::HIGH_IDLE );
 
     maDeactivateTimer.SetTimeoutHdl(LINK(this, SlideshowImpl, deactivateHdl));
     maDeactivateTimer.SetTimeout( 20 );

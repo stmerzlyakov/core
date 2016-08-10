@@ -96,7 +96,7 @@ namespace sdr
         class TimerEventHandler : public EventHandler, public Idle
         {
         public:
-            TimerEventHandler(SchedulerPriority ePriority = SchedulerPriority::HIGH);
+            TimerEventHandler(SchedulerPriority ePriority = SchedulerPriority::HIGH_IDLE);
 
             virtual ~TimerEventHandler();
 

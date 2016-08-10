@@ -103,7 +103,6 @@ ScFunctionDockWin::ScFunctionDockWin( SfxBindings* pBindingsP,
     InitLRUList();
     SetStyle(GetStyle()|WB_CLIPCHILDREN);
 
-    aIdle.SetPriority(SchedulerPriority::LOWER);
     aIdle.SetIdleHdl(LINK( this, ScFunctionDockWin, TimerHdl));
 
     if (pCW != NULL)

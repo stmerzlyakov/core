@@ -141,7 +141,7 @@ _SfxMacroTabPage::_SfxMacroTabPage(vcl::Window* pParent, const SfxItemSet& rAttr
     mpImpl = new _SfxMacroTabPage_Impl;
 
     mpImpl->maFillGroupIdle.SetIdleHdl( LINK( this, _SfxMacroTabPage, TimeOut_Impl ) );
-    mpImpl->maFillGroupIdle.SetPriority( SchedulerPriority::HIGHEST );
+    mpImpl->maFillGroupIdle.SetPriority( SchedulerPriority::HIGH_IDLE );
     mpImpl->maFillGroupIdle.SetDebugName( "_SfxMacroTabPage maFillGroupIdle" );
 }
 

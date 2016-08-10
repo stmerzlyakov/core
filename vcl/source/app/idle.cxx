@@ -24,6 +24,7 @@
 
 Idle::Idle( const sal_Char *pDebugName ) : SchedulerCallback( pDebugName )
 {
+    SetPriority( SchedulerPriority::DEFAULT_IDLE );
 }
 
 void Idle::Start()
@@ -33,28 +34,14 @@ void Idle::Start()
     Timer::ImplStartTimer( pSVData, 0 );
 }
 
-bool Idle::ReadyForSchedule( const sal_uInt64 /* nTime */, const bool /* bIdle */ )
+bool Idle::ReadyForSchedule( const sal_uInt64 /* nTime */, const bool bIdle )
 {
-    // tdf#91727 - We need to re-work this to allow only UI idle handlers
-    //             and not timeouts to be processed in some limited scenarios
-    return true; // !bTimer
+    return (bIdle || mePriority < SchedulerPriority::DEFAULT_IDLE);
 }
 
 void Idle::UpdateMinPeriod( const sal_uInt64 /* nTime */, sal_uInt64 &nMinPeriod )
 {
-    switch (mePriority) {
-    case SchedulerPriority::HIGHEST:
-    case SchedulerPriority::HIGH:
-    case SchedulerPriority::RESIZE:
-    case SchedulerPriority::REPAINT:
-        nMinPeriod = MIN_SLEEP_PERIOD; // don't wait.
-        break;
-    default:
-        // FIXME: tdf#92036 workaround, I should be 1 too - wait 5ms
-        if (nMinPeriod > 5)
-            nMinPeriod = 5;
-        break;
-    }
+    nMinPeriod = MIN_SLEEP_PERIOD;
 }
 
 AutoIdle::AutoIdle( const sal_Char *pDebugName )

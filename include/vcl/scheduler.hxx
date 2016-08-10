@@ -38,14 +38,13 @@ struct ImplSchedulerData
 
 /// Higher priority = smaller number!
 enum class SchedulerPriority {
-    HIGHEST   = 0,
-    HIGH      = 1,
-    RESIZE    = 2,
-    REPAINT   = 3,
-    MEDIUM    = 3,
-    LOW       = 4,
-    LOWER     = 5,
-    LOWEST    = 6
+    HIGHEST,       ///< These events should run very fast!
+    DEFAULT,       ///< Default priority used, e.g. the default timer priority
+    HIGH_IDLE,     ///< Important idle events to be run before processing drawing events
+    RESIZE,        ///< Resize runs before repaint, so we won't paint twice
+    REPAINT,       ///< All repaint events should go in here
+    DEFAULT_IDLE,  ///< Default idle priority
+    LOWEST
 };
 
 class VCL_DLLPUBLIC Scheduler

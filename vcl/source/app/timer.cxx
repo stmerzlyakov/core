@@ -74,6 +74,7 @@ void Timer::InitSystemTimer()
 Timer::Timer( const sal_Char *pDebugName ) : SchedulerCallback( pDebugName )
 {
     mnTimeout    = MIN_SLEEP_PERIOD;
+    mePriority   = SchedulerPriority::DEFAULT;
 }
 
 void Timer::Start()

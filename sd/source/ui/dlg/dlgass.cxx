@@ -586,13 +586,10 @@ AssistentDlgImpl::AssistentDlgImpl( vcl::Window* pWindow, const Link<>& rFinishL
     maAssistentFunc.GotoPage(1);
     mpLastPageButton->Disable();
 
-    maPrevIdle.SetPriority( SchedulerPriority::LOWER );
     maPrevIdle.SetIdleHdl( LINK( this, AssistentDlgImpl, UpdatePreviewHdl));
 
-    maEffectPrevIdle.SetPriority( SchedulerPriority::MEDIUM );
     maEffectPrevIdle.SetIdleHdl( LINK( this, AssistentDlgImpl, EffectPreviewIdleHdl ));
 
-    maUpdatePageListIdle.SetPriority( SchedulerPriority::MEDIUM );
     maUpdatePageListIdle.SetIdleHdl( LINK( this, AssistentDlgImpl, UpdatePageListHdl));
 
     SetStartType( ST_EMPTY );
