@@ -858,6 +858,7 @@ void SwDoc::ReplaceCompatibilityOptions(const SwDoc& rSource)
 
 SfxObjectShell* SwDoc::CreateCopy(bool bCallInitNew ) const
 {
+    SAL_INFO( "sw.pagefrm", "(SwDoc::CreateCopy in" );
     SwDoc* pRet = new SwDoc;
 
     // we have to use pointer here, since the callee has to decide whether
@@ -893,6 +894,7 @@ SfxObjectShell* SwDoc::CreateCopy(bool bCallInitNew ) const
 
     (void)pRet->release();
 
+    SAL_INFO( "sw.pagefrm", "SwDoc::CreateCopy out)" );
     return pRetShell;
 }
 
@@ -900,6 +902,8 @@ SfxObjectShell* SwDoc::CreateCopy(bool bCallInitNew ) const
 SwNodeIndex SwDoc::AppendDoc(const SwDoc& rSource, sal_uInt16 const nStartPageNumber,
             SwPageDesc *const pTargetPageDesc, bool const bDeletePrevious, int pageOffset)
 {
+    SAL_INFO( "sw.pagefrm", "(SwDoc::AppendDoc in " << bDeletePrevious );
+
     // GetEndOfExtras + 1 = StartOfContent == no content node!
     // this ensures, that we have at least two nodes in the SwPaM.
     // @see IDocumentContentOperations::CopyRange
@@ -980,7 +984,9 @@ SwNodeIndex SwDoc::AppendDoc(const SwDoc& rSource, sal_uInt16 const nStartPageNu
             // Flush the page break, if we want to keep it
             if ( !bDeletePrevious )
             {
+                SAL_INFO( "sw.pagefrm", "(Flush pagebreak AKA EndAllAction" );
                 pTargetShell->EndAllAction();
+                SAL_INFO( "sw.pagefrm",  "Flush changes AKA EndAllAction)" );
                 pTargetShell->StartAllAction();
             }
         }
@@ -1156,6 +1162,7 @@ else
     if ( pTargetShell )
         pTargetShell->EndAllAction();
 
+    SAL_INFO( "sw.pagefrm", "SwDoc::AppendDoc out)" );
     return aStartAppendIndex;
 }
 

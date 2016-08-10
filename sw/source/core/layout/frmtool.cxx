@@ -2698,10 +2698,12 @@ SwPageFrm * InsertNewPage( SwPageDesc &rDesc, SwFrm *pUpper,
         SwPageDesc *pTmpDesc = pSibling && pSibling->GetPrev() ?
                 static_cast<SwPageFrm*>(pSibling->GetPrev())->GetPageDesc() : &rDesc;
         pRet = new SwPageFrm( pDoc->GetEmptyPageFormat(), pUpper, pTmpDesc );
+        SAL_INFO( "sw.pagefrm", "InsertNewPage - insert empty p: " << pRet << " d: " << pTmpDesc );
         pRet->Paste( pUpper, pSibling );
         pRet->PreparePage( bFootnote );
     }
     pRet = new SwPageFrm( pFormat, pUpper, &rDesc );
+    SAL_INFO( "sw.pagefrm", "InsertNewPage p: " << pRet << " d: " << &rDesc << " f: " << pFormat );
     pRet->Paste( pUpper, pSibling );
     pRet->PreparePage( bFootnote );
     if ( pRet->GetNext() )

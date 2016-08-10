@@ -1421,7 +1421,9 @@ bool SwDBManager::MergeMailFiles(SwWrtShell* pSourceShell,
             // Unfreeze target document layouts and correct all PageDescs.
             if(bCreateSingleFile)
             {
+                SAL_INFO( "sw.pagefrm", "(MergeMailFiles pTargetShell->CalcLayout in" );
                 pTargetShell->CalcLayout();
+                SAL_INFO( "sw.pagefrm", "MergeMailFiles pTargetShell->CalcLayout out)" );
                 std::set<SwRootFrm*> aAllLayouts = pTargetShell->GetDoc()->GetAllLayouts();
                 std::for_each( aAllLayouts.begin(), aAllLayouts.end(),
                     ::std::bind2nd(::std::mem_fun(&SwRootFrm::FreezeLayout), false));

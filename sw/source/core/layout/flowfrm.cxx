@@ -848,6 +848,13 @@ bool SwFrm::WrongPageDesc( SwPageFrm* pNew )
     const SwPageDesc *pNewDesc= ( pNewFlow && !pNewFlow->IsFollow() )
             ? pNewFlow->GetFrm().GetAttrSet()->GetPageDesc().GetPageDesc() : 0;
 
+    SAL_INFO( "sw.pagefrm", "WrongPageDesc p: " << pNew << " phys: " << pNew->GetPhyPageNum() );
+    SAL_INFO( "sw.pagefrm", "WrongPageDesc " << pNew->GetPageDesc() << " " << pDesc );
+    SAL_INFO( "sw.pagefrm", "WrongPageDesc odd: " << bOdd
+              << " first: " << bFirst << " " << pNew->GetFormat() << " == "
+              << (bOdd ? pDesc->GetRightFormat(bFirst) : pDesc->GetLeftFormat(bFirst)) << " "
+              << (bOdd ? pDesc->GetLeftFormat(bFirst) : pDesc->GetRightFormat(bFirst)) );
+
     return (pNew->GetPageDesc() != pDesc)   //  own desc ?
         || (pNew->GetFormat() !=
               (bOdd ? pDesc->GetRightFormat(bFirst) : pDesc->GetLeftFormat(bFirst)))
