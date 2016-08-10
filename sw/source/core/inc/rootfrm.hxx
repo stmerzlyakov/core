@@ -48,6 +48,12 @@ struct SwCrsrMoveState;
 #define INV_LINENUM 32
 #define INV_DIRECTION 64
 
+enum SwRemoveResult
+{
+    Next,
+    Prev
+};
+
 #include <vector>
 
 /// The root element of a Writer document layout.
@@ -369,6 +375,8 @@ public:
 
     bool IsLayoutFreezed() const { return mbLayoutFreezed; }
     void FreezeLayout( bool freeze ) { mbLayoutFreezed = freeze; }
+
+    void RemovePage( SwPageFrm **pDel, SwRemoveResult eResult );
 };
 
 inline long SwRootFrm::GetBrowseWidth() const

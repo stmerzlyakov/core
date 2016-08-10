@@ -1149,6 +1149,26 @@ void SwFrm::CheckPageDescs( SwPageFrm *pStart, bool bNotifyFields, SwPageFrm** p
 #endif
 }
 
+static bool lcl_InsertPage( SwRootFrm *pRoot, SwPageFrm **pRefSibling,
+                            SwFrameFormat *pFormat, SwPageDesc *pDesc,
+                            bool bFootnote, SwPageFrm **pRefPage )
+{
+    SwPageFrm *pPage = new SwPageFrm(pFormat, pRoot, pDesc);
+    SwPageFrm *pSibling = *pRefSibling;
+    if ( pRefPage )
+        *pRefPage = pPage;
+    pPage->Paste( pRoot, pSibling );
+    pPage->PreparePage( bFootnote );
+    // If the sibling has no body text, destroy it as long as it is no footnote page.
+    if ( pSibling && !pSibling->IsFootnotePage() &&
+         !pSibling->FindFirstBodyContent() )
+    {
+        pRoot->RemovePage( pRefSibling, SwRemoveResult::Next ) ;
+        return false;
+    }
+    return true;
+}
+
 SwPageFrm *SwFrm::InsertPage( SwPageFrm *pPrevPage, bool bFootnote )
 {
     SwRootFrm *pRoot = static_cast<SwRootFrm*>(pPrevPage->GetUpper());
@@ -1186,45 +1206,15 @@ SwPageFrm *SwFrm::InsertPage( SwPageFrm *pPrevPage, bool bFootnote )
     // If there is no FrameFormat for this page, create an empty page.
     if( bWishedOdd != bNextOdd )
     {
-        SwFrameFormat *const pEmptyFormat = pDoc->GetEmptyPageFormat();
-        SwPageDesc *pTmpDesc = pPrevPage->GetPageDesc();
-        SwPageFrm *pPage = new SwPageFrm(pEmptyFormat, pRoot, pTmpDesc);
-        pPage->Paste( pRoot, pSibling );
-        pPage->PreparePage( bFootnote );
-        // If the sibling has no body text, destroy it as long as it is no footnote page.
-        if ( pSibling && !pSibling->IsFootnotePage() &&
-             !pSibling->FindFirstBodyContent() )
-        {
-            SwPageFrm *pDel = pSibling;
-            pSibling = static_cast<SwPageFrm*>(pSibling->GetNext());
-            if ( !pDoc->GetFootnoteIdxs().empty() )
-                pRoot->RemoveFootnotes( pDel, true );
-            pDel->Cut();
-            SwFrm::DestroyFrm(pDel);
-        }
-        else
-            bCheckPages = true;
+        bCheckPages = lcl_InsertPage( pRoot, &pSibling, pDoc->GetEmptyPageFormat(),
+                                      pPrevPage->GetPageDesc(), bFootnote, NULL ) || bCheckPages;
     }
     SwFrameFormat *const pFormat( (bWishedOdd)
             ? pDesc->GetRightFormat(bWishedFirst)
             : pDesc->GetLeftFormat(bWishedFirst) );
     assert(pFormat);
-    SwPageFrm *pPage = new SwPageFrm( pFormat, pRoot, pDesc );
-    pPage->Paste( pRoot, pSibling );
-    pPage->PreparePage( bFootnote );
-    // If the sibling has no body text, destroy it as long as it is no footnote page.
-    if ( pSibling && !pSibling->IsFootnotePage() &&
-         !pSibling->FindFirstBodyContent() )
-    {
-        SwPageFrm *pDel = pSibling;
-        pSibling = static_cast<SwPageFrm*>(pSibling->GetNext());
-        if ( !pDoc->GetFootnoteIdxs().empty() )
-            pRoot->RemoveFootnotes( pDel, true );
-        pDel->Cut();
-        SwFrm::DestroyFrm(pDel);
-    }
-    else
-        bCheckPages = true;
+    SwPageFrm *pPage = NULL;
+    bCheckPages = lcl_InsertPage( pRoot, &pSibling, pFormat, pDesc, bFootnote, &pPage ) || bCheckPages;
 
     if ( pSibling )
     {
@@ -1291,6 +1281,17 @@ SwTwips SwRootFrm::ShrinkFrm( SwTwips nDist, bool bTst, bool )
     if ( !bTst )
         Frm().SSize().Height() -= nDist;
     return nDist;
+}
+
+void SwRootFrm::RemovePage( SwPageFrm **pDelRef, SwRemoveResult eResult )
+{
+    SwPageFrm *pDel = *pDelRef;
+    (*pDelRef) = static_cast<SwPageFrm*>(
+        eResult == SwRemoveResult::Next ? pDel->GetNext() : pDel->GetPrev() );
+    if ( !GetFormat()->GetDoc()->GetFootnoteIdxs().empty() )
+        RemoveFootnotes( pDel, true );
+    pDel->Cut();
+    SwFrm::DestroyFrm( pDel );
 }
 
 /// remove pages that are not needed at all
@@ -1364,12 +1365,7 @@ void SwRootFrm::RemoveSuperfluous()
 
         if ( pPage )
         {
-            SwPageFrm *pEmpty = pPage;
-            pPage = static_cast<SwPageFrm*>(pPage->GetPrev());
-            if ( !GetFormat()->GetDoc()->GetFootnoteIdxs().empty() )
-                RemoveFootnotes( pEmpty, true );
-            pEmpty->Cut();
-            SwFrm::DestroyFrm(pEmpty);
+            RemovePage( &pPage, SwRemoveResult::Prev );
             nDocPos = pPage ? pPage->Frm().Top() : 0;
         }
     } while ( pPage );
