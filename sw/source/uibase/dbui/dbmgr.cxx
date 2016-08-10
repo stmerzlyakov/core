@@ -985,6 +985,7 @@ bool SwDBManager::MergeMailFiles(SwWrtShell* pSourceShell,
                 //initiate SelectShell() to create sub shells
                 pTargetView->AttrChangedNotify( &pTargetView->GetWrtShell() );
                 pTargetShell = pTargetView->GetWrtShellPtr();
+                pTargetShell->GetViewOptions()->SetIdle( false );
                 pTargetDoc = pTargetShell->GetDoc();
                 pTargetDoc->SetInMailMerge(true);
 
@@ -1125,6 +1126,7 @@ bool SwDBManager::MergeMailFiles(SwWrtShell* pSourceShell,
                         pWorkView = static_cast< SwView* >( SfxViewFrame::LoadHiddenDocument( *xWorkDocSh, 0 )->GetViewShell() );
                         //request the layout calculation
                         SwWrtShell& rWorkShell = pWorkView->GetWrtShell();
+                        rWorkShell.GetViewOptions()->SetIdle( false );
                         pWorkView->AttrChangedNotify( &rWorkShell );// in order for SelectShell to be called
 
                         pWorkDoc = rWorkShell.GetDoc();
@@ -1424,6 +1426,7 @@ bool SwDBManager::MergeMailFiles(SwWrtShell* pSourceShell,
                 SAL_INFO( "sw.pagefrm", "(MergeMailFiles pTargetShell->CalcLayout in" );
                 pTargetShell->CalcLayout();
                 SAL_INFO( "sw.pagefrm", "MergeMailFiles pTargetShell->CalcLayout out)" );
+                pTargetShell->GetViewOptions()->SetIdle( true );
                 std::set<SwRootFrm*> aAllLayouts = pTargetShell->GetDoc()->GetAllLayouts();
                 std::for_each( aAllLayouts.begin(), aAllLayouts.end(),
                     ::std::bind2nd(::std::mem_fun(&SwRootFrm::FreezeLayout), false));
