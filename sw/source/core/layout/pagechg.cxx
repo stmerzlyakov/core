@@ -988,19 +988,21 @@ void SwFrm::CheckPageDescs( SwPageFrm *pStart, bool bNotifyFields, SwPageFrm** p
         pPage = static_cast<SwPageFrm*>(pPage->GetPrev());
     while ( pPage )
     {
-        // obtain PageDesc and FrameFormat
+        SwPageFrm *pPrevPage = static_cast<SwPageFrm*>(pPage->GetPrev());
+        SwPageFrm *pNextPage = static_cast<SwPageFrm*>(pPage->GetNext());
+
         SwPageDesc *pDesc = pPage->FindPageDesc();
-        bool bCheckEmpty = pPage->IsEmptyPage();
-        bool bActOdd = pPage->OnRightPage();
-        bool bOdd = pPage->WannaRightPage();
+        bool bIsEmpty = pPage->IsEmptyPage();
+        bool bIsOdd = pPage->OnRightPage();
+        bool bWantOdd = pPage->WannaRightPage();
         bool bFirst = pPage->OnFirstPage();
-        SwFrameFormat *pFormatWish = (bOdd)
+        SwFrameFormat *pFormatWish = (bWantOdd)
             ? pDesc->GetRightFormat(bFirst) : pDesc->GetLeftFormat(bFirst);
 
-        if ( bActOdd != bOdd ||
+        if ( bIsOdd != bWantOdd ||
              pDesc != pPage->GetPageDesc() ||        // wrong Desc
-             ( pFormatWish != pPage->GetFormat()  &&       // wrong format and
-               ( !pPage->IsEmptyPage() || pFormatWish ) // not blank /empty
+             ( pFormatWish != pPage->GetFormat() &&       // wrong format and
+               ( !bIsEmpty || pFormatWish ) // not blank /empty
              )
            )
         {
@@ -1010,8 +1012,7 @@ void SwFrm::CheckPageDescs( SwPageFrm *pStart, bool bNotifyFields, SwPageFrm** p
 
             // invalidate the field, starting from here
             if ( nDocPos == LONG_MAX )
-                nDocPos = pPage->GetPrev() ?
-                            pPage->GetPrev()->Frm().Top() : pPage->Frm().Top();
+                nDocPos = pPrevPage ?  pPrevPage->Frm().Top() : pPage->Frm().Top();
 
             // Cases:
             //  1. Empty page should be "normal" page -> remove empty page and take next one
@@ -1022,38 +1023,36 @@ void SwFrm::CheckPageDescs( SwPageFrm *pStart, bool bNotifyFields, SwPageFrm** p
             //  5. Normal page should have different format -> change
             //  6. No "wish" format provided -> take the "other" format (left/right) of the PageDesc
 
-            if ( pPage->IsEmptyPage() && ( pFormatWish ||          //1.
-                 ( !bOdd && !pPage->GetPrev() ) ) )
+            if ( bIsEmpty && ( pFormatWish ||          //1.
+                 ( !bWantOdd && !pPrevPage ) ) )
             {
-                SwPageFrm *pTmp = static_cast<SwPageFrm*>(pPage->GetNext());
                 pPage->Cut();
                 bool bUpdatePrev = false;
                 if (ppPrev && *ppPrev == pPage)
                     bUpdatePrev = true;
                 SwFrm::DestroyFrm(pPage);
                 if ( pStart == pPage )
-                    pStart = pTmp;
-                pPage = pTmp;
+                    pStart = pNextPage;
+                pPage = pNextPage;
                 if (bUpdatePrev)
-                    *ppPrev = pTmp;
+                    *ppPrev = pNextPage;
                 continue;
             }
-            else if ( pPage->IsEmptyPage() && !pFormatWish &&  //2.
+            else if ( bIsEmpty && !pFormatWish &&  //2.
                       pDesc != pPage->GetPageDesc() )
             {
                 pPage->SetPageDesc( pDesc, 0 );
             }
-            else if ( !pPage->IsEmptyPage() &&      //3.
-                      bActOdd != bOdd &&
-                      ( ( !pPage->GetPrev() && !bOdd ) ||
-                        ( pPage->GetPrev() &&
-                          !static_cast<SwPageFrm*>(pPage->GetPrev())->IsEmptyPage() )
+            else if ( !bIsEmpty &&      //3.
+                      bIsOdd != bWantOdd &&
+                      ( ( !pPrevPage && !bWantOdd ) ||
+                        ( pPrevPage && !pPrevPage->IsEmptyPage() )
                       )
                     )
             {
-                if ( pPage->GetPrev() )
-                    pDesc = static_cast<SwPageFrm*>(pPage->GetPrev())->GetPageDesc();
-                SwPageFrm *pTmp = new SwPageFrm( pDoc->GetEmptyPageFormat(),pRoot,pDesc);
+                if ( pPrevPage )
+                    pDesc = pPrevPage->GetPageDesc();
+                SwPageFrm *pTmp = new SwPageFrm( pDoc->GetEmptyPageFormat(), pRoot, pDesc );
                 pTmp->Paste( pRoot, pPage );
                 pTmp->PreparePage( false );
                 pPage = pTmp;
@@ -1080,9 +1079,9 @@ void SwFrm::CheckPageDescs( SwPageFrm *pStart, bool bNotifyFields, SwPageFrm** p
             else if ( !pFormatWish )                                       //6.
             {
                 // get format with inverted logic
-                if (!pFormatWish)
-                    pFormatWish = bOdd ? pDesc->GetLeftFormat() : pDesc->GetRightFormat();
-                if ( pPage->GetFormat() != pFormatWish )
+                pFormatWish = bWantOdd ? pDesc->GetLeftFormat() : pDesc->GetRightFormat();
+                if ( pFormatWish && pPage->GetFormat() != pFormatWish )
+                {
                     pPage->SetFrameFormat( pFormatWish );
             }
 #if OSL_DEBUG_LEVEL > 0
@@ -1092,7 +1091,7 @@ void SwFrm::CheckPageDescs( SwPageFrm *pStart, bool bNotifyFields, SwPageFrm** p
             }
 #endif
         }
-        if ( bCheckEmpty )
+        if ( bIsEmpty )
         {
             // It also might be that an empty page is not needed at all.
             // However, the algorithm above cannot determine that. It is not needed if the following

@@ -810,15 +810,15 @@ bool SwFrm::WrongPageDesc( SwPageFrm* pNew )
     // Way out of the situation: Try to preliminarily insert a
     // new page once (empty pages are already inserted by InsertPage()
     // if required)
-    const SwFormatPageDesc &rFormatDesc = GetAttrSet()->GetPageDesc();
 
     //My Pagedesc doesn't count if I'm a follow!
-    SwPageDesc *pDesc = 0;
+    const SwPageDesc *pDesc = 0;
     int nTmp = 0;
     SwFlowFrm *pFlow = SwFlowFrm::CastFlowFrm( this );
     if ( !pFlow || !pFlow->IsFollow() )
     {
-        pDesc = const_cast<SwPageDesc*>(rFormatDesc.GetPageDesc());
+        const SwFormatPageDesc &rFormatDesc = GetAttrSet()->GetPageDesc();
+        pDesc = rFormatDesc.GetPageDesc();
         if( pDesc )
         {
             if( !pDesc->GetRightFormat() )
