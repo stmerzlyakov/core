@@ -1408,29 +1408,9 @@ void SwRootFrm::AssertFlyPages()
 
     if ( nMaxPg > pPage->GetPhyPageNum() )
     {
-        // Continue pages based on the rules of the PageDesc after the last page.
-        bool bOdd = (pPage->GetPhyPageNum() % 2) != 0;
-        SwPageDesc *pDesc = pPage->GetPageDesc();
-        SwFrm *pSibling = pPage->GetNext();
         for ( sal_uInt16 i = pPage->GetPhyPageNum(); i < nMaxPg; ++i  )
-        {
-            if ( !(bOdd ? pDesc->GetRightFormat() : pDesc->GetLeftFormat()) )
-            {
-                // Insert empty page (but Flys will be stored in the next page)
-                pPage = new SwPageFrm( pDoc->GetEmptyPageFormat(), this, pDesc );
-                pPage->Paste( this, pSibling );
-                pPage->PreparePage( false );
-                bOdd = !bOdd;
-                ++i;
-            }
-            pPage = new
-                    SwPageFrm( (bOdd ? pDesc->GetRightFormat() :
-                                       pDesc->GetLeftFormat()), this, pDesc );
-            pPage->Paste( this, pSibling );
-            pPage->PreparePage( false );
-            bOdd = !bOdd;
-            pDesc = pDesc->GetFollow();
-        }
+            pPage = InsertPage( pPage, false );
+
         // If the endnote pages are now corrupt, destroy them.
         if ( !pDoc->GetFootnoteIdxs().empty() )
         {
@@ -1441,7 +1421,7 @@ void SwRootFrm::AssertFlyPages()
             if ( pPage )
             {
                 SwPageDesc *pTmpDesc = pPage->FindPageDesc();
-                bOdd = pPage->OnRightPage();
+                bool bOdd = pPage->OnRightPage();
                 if ( pPage->GetFormat() !=
                      (bOdd ? pTmpDesc->GetRightFormat() : pTmpDesc->GetLeftFormat()) )
                     RemoveFootnotes( pPage, false, true );
