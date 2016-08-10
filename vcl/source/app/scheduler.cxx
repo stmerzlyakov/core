@@ -169,7 +169,12 @@ next_entry:
         pMostUrgent->mnLastTime = nTime;
         UpdateMinPeriod( pMostUrgent, nTime, nMinPeriod );
 
+        Scheduler *pTempScheduler = pMostUrgent->mpScheduler;
+        SAL_INFO( "vcl.schedule", pTempScheduler << "  invoke   "
+                   << pTempScheduler->mpDebugName );
         pMostUrgent->Invoke();
+        if ( !pMostUrgent->mpScheduler )
+            SAL_INFO( "vcl.schedule", pTempScheduler <<  "  tag-rm   " );
 
         // do some simple round-robin scheduling
         // nothing to do, if we're already the last element
@@ -184,7 +189,7 @@ next_entry:
         }
     }
 
-    // delete clock if no more timers available
+    // delete the wakeup timer, if no more tasks need scheduling
     if ( nMinPeriod != MAX_SLEEP_PERIOD )
         Timer::ImplStartTimer( pSVData, nMinPeriod );
     else if ( pSVData->mpSalTimer )
@@ -216,10 +221,12 @@ void Scheduler::Start()
         mpSchedulerData->mbInScheduler = false;
         mpSchedulerData->mpNext        = pSVData->mpFirstSchedulerData;
         pSVData->mpFirstSchedulerData  = mpSchedulerData;
+        SAL_INFO( "vlc.scheduler", this <<  "  added    " << mpDebugName );
     }
 
     assert( mpSchedulerData->mpScheduler == this );
     mpSchedulerData->mnLastTime  = tools::Time::GetSystemTicks();
+    SAL_INFO( "vlc.scheduler", this <<  "  started  " << mpDebugName );
 
     pSVData->mbNeedsReschedule = true;
 }
@@ -229,6 +236,7 @@ void Scheduler::Stop()
     if ( !mpSchedulerData )
         return;
     Scheduler::SetDeletionFlags();
+    SAL_INFO( "vlc.scheduler", this <<  "  stopped  " << mpDebugName );
     assert( !mpSchedulerData );
 }
 

@@ -403,6 +403,7 @@ certain functionality.
 @li @c vcl.osx
 @li @c vcl.osx.print
 @li @c vcl.quartz
+@li @c vcl.scheduler - VCL task scheduling code
 @li @c vcl.scrollbar - Scroll Bars
 @li @c vcl.sm - Session Manager
 @li @c vcl.unity
