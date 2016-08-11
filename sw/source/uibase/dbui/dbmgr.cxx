@@ -80,6 +80,7 @@
 #include <IDocumentLinksAdministration.hxx>
 #include <IDocumentContentOperations.hxx>
 #include <IDocumentFieldsAccess.hxx>
+#include <IDocumentUndoRedo.hxx>
 #include <swwait.hxx>
 #include <swunohelper.hxx>
 #include <dbui.hrc>
@@ -988,6 +989,7 @@ bool SwDBManager::MergeMailFiles(SwWrtShell* pSourceShell,
                 pTargetShell->GetViewOptions()->SetIdle( false );
                 pTargetDoc = pTargetShell->GetDoc();
                 pTargetDoc->SetInMailMerge(true);
+                pTargetDoc->GetIDocumentUndoRedo().DoUndo( false );
 
                 //copy the styles from the source to the target document
                 pTargetView->GetDocShell()->_LoadStyles( *pSourceDocSh, true );
@@ -1130,6 +1132,7 @@ bool SwDBManager::MergeMailFiles(SwWrtShell* pSourceShell,
                         pWorkView->AttrChangedNotify( &rWorkShell );// in order for SelectShell to be called
 
                         pWorkDoc = rWorkShell.GetDoc();
+                        pWorkDoc->GetIDocumentUndoRedo().DoUndo( false );
                         pWorkDoc->ReplaceDocumentProperties( *pSourceDocSh->GetDoc());
                         if ( (nMaxDumpDocs < 0) || (nDocNo <= nMaxDumpDocs) )
                             lcl_SaveDoc( xWorkDocSh, "WorkDoc", nDocNo );
@@ -1426,6 +1429,7 @@ bool SwDBManager::MergeMailFiles(SwWrtShell* pSourceShell,
                 SAL_INFO( "sw.pagefrm", "(MergeMailFiles pTargetShell->CalcLayout in" );
                 pTargetShell->CalcLayout();
                 SAL_INFO( "sw.pagefrm", "MergeMailFiles pTargetShell->CalcLayout out)" );
+                pTargetDoc->GetIDocumentUndoRedo().DoUndo( true );
                 pTargetShell->GetViewOptions()->SetIdle( true );
                 std::set<SwRootFrm*> aAllLayouts = pTargetShell->GetDoc()->GetAllLayouts();
                 std::for_each( aAllLayouts.begin(), aAllLayouts.end(),
