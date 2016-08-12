@@ -29,6 +29,7 @@
 #include <edtwin.hxx>
 #include <olmenu.hxx>
 #include <cmdid.h>
+#include <pagefrm.hxx>
 
 /**
  * Maps database URIs to the registered database names for quick lookups
@@ -461,6 +462,41 @@ DECLARE_SHELL_MAILMERGE_TEST(testTdf92623, "tdf92623.odt", "10-testing-addresses
             CPPUNIT_ASSERT_EQUAL( sal_Int32(markType), sal_Int32(IDocumentMarkAccess::MarkType::UNO_BOOKMARK) );
     }
     CPPUNIT_ASSERT_EQUAL(sal_Int32(10), countFieldMarks);
+}
+
+DECLARE_SHELL_MAILMERGE_TEST(test_sections_first_last, "sections_first_last.odt", "10-testing-addresses.ods", "testing-addresses")
+{
+    executeMailMerge();
+
+    SwXTextDocument* pTextDoc = dynamic_cast<SwXTextDocument *>(mxComponent.get());
+    CPPUNIT_ASSERT(pTextDoc);
+
+    // Get the size of the document in nodes
+    SwDoc *pDoc = pTextDoc->GetDocShell()->GetDoc();
+    sal_uLong nSize = pDoc->GetNodes().GetEndOfContent().GetIndex() - pDoc->GetNodes().GetEndOfExtras().GetIndex();
+    nSize -= 2; // The common start and end node
+    CPPUNIT_ASSERT_EQUAL( sal_uLong(13), nSize );
+
+    SwXTextDocument* pTextDocMM = dynamic_cast<SwXTextDocument *>(mxMMComponent.get());
+    CPPUNIT_ASSERT(pTextDocMM);
+
+    SwDoc *pDocMM = pTextDocMM->GetDocShell()->GetDoc();
+    sal_uLong nSizeMM = pDocMM->GetNodes().GetEndOfContent().GetIndex() - pDocMM->GetNodes().GetEndOfExtras().GetIndex();
+    nSizeMM -= 2;
+    CPPUNIT_ASSERT_EQUAL( sal_uLong(10 * nSize), nSizeMM );
+
+    CPPUNIT_ASSERT_EQUAL( sal_uInt16(19), pDocMM->GetDocShell()->GetWrtShell()->GetPhyPageNum() );
+
+    // All even pages should be empty, all sub-documents have two pages
+    const SwRootFrm* pLayout = pDocMM->getIDocumentLayoutAccess().GetCurrentLayout();
+    const SwPageFrm* pPageFrm = static_cast<const SwPageFrm*>( pLayout->Lower() );
+    while ( pPageFrm )
+    {
+        sal_uInt16 nEven = pPageFrm->GetPhyPageNum() % 2;
+        CPPUNIT_ASSERT_EQUAL( bool( !nEven ), pPageFrm->IsEmptyPage() );
+//        CPPUNIT_ASSERT_EQUAL( sal_uInt16( nEven + 1 ), pPageFrm->GetVirtPageNum() );
+        pPageFrm = static_cast<const SwPageFrm*>( pPageFrm->GetNext() );
+    }
 }
 
 CPPUNIT_PLUGIN_IMPLEMENT();
