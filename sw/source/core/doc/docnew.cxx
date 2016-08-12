@@ -949,6 +949,7 @@ SwNodeIndex SwDoc::AppendDoc(const SwDoc& rSource, sal_uInt16 const nStartPageNu
               // can't move after a trailing section.
                 SwNodeIndex aBreakIdx( GetNodes().GetEndOfContent(), -1 );
                 SwPosition aBreakPos( aBreakIdx );
+#if 0
                 getIDocumentContentOperations().AppendTextNode( aBreakPos );
                 aBreakIdx++;
                 SwTextNode *aTextNd = aBreakIdx.GetNode().GetTextNode();
@@ -960,6 +961,22 @@ SwNodeIndex SwDoc::AppendDoc(const SwDoc& rSource, sal_uInt16 const nStartPageNu
                     aDesc->RegisterToPageDesc( *pTargetPageDesc );
                 aTextNd->SetAttr( *aDesc );
                 delete pNewItem;
+                // a magic call to sync with whatever, so AssertFlyPages
+                // sees the correct format AKA same as InsertPageBreak does
+#else
+                // InsertPageBreak just works on SwTextNode nodes, so make
+                // sure the last node is one!
+                bool bIsTextNode = aBreakIdx.GetNode().IsTextNode();
+                if ( !bIsTextNode )
+                    getIDocumentContentOperations().AppendTextNode( aBreakPos );
+                OUString name = pTargetPageDesc->GetName();
+                pTargetShell->InsertPageBreak( &name, nStartPageNumber );
+                if ( !bIsTextNode )
+                {
+                    --aBreakIdx;
+                    GetNodes().Delete( aBreakIdx, 1 );
+                }
+#endif
             }
 
             // There is now a new empty text node on the new page. If it has
