@@ -1634,6 +1634,13 @@ AC_ARG_WITH(system-bzip2,
         [Use bzip2 already on system. Used only when --enable-online-update=mar]),,
     [with_system_bzip2="$with_system_libs"])
 
+AC_ARG_WITH(xmlsec-over-openssl,
+    AS_HELP_STRING([--with-xmlsec-over-openssl],
+        [Use openssl for xmlsec. Used only with --with-system-openssl]),,
+    [with_xmlsec_over_openssl="$with_xmlsec_over_openssl"])
+
+
+
 AC_ARG_WITH(system-headers,
     AS_HELP_STRING([--with-system-headers],
         [Use headers already on system -- enables all --with-system-* flags for
@@ -11770,6 +11777,22 @@ fi
 AC_SUBST(SYSTEM_BZIP2)
 AC_SUBST(BZIP2_CFLAGS)
 AC_SUBST(BZIP2_LIBS)
+
+
+dnl ===================================================================
+dnl Test whether we need xmlsec over openssl
+dnl ===================================================================
+XMLSEC_OVER_OPENSSL=
+if test "$SYSTEM_OPENSSL" = "TRUE"; then
+    AC_MSG_CHECKING([whether to use xmlsec over openssl])
+    if test "$with_xmlsec_over_openssl" = yes; then
+        XMLSEC_OVER_OPENSSL=TRUE
+        AC_MSG_RESULT([yes])
+    fi
+fi
+AC_SUBST(XMLSEC_OVER_OPENSSL)
+
+
 
 dnl ===================================================================
 dnl Test whether to enable extension update
